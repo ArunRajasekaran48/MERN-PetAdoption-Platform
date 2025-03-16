@@ -74,7 +74,7 @@ const loginUser= async (req,res)=>{
         const accessToken=await generateAccesstoken(user._id)
         const loggedInUser=await User.findById(user._id).select("-password ")
         if(!loggedInUser)throw new ApiError(409,"Error Logging user")
-        console.log(accessToken);
+        // console.log(accessToken);
         return res
         .status(200)
         .cookie("accessToken",accessToken)
@@ -133,4 +133,56 @@ const refreshAccessToken=async (req,res)=>{
     }
     
 }
-export {registerUser,loginUser,refreshAccessToken,logoutUser}
+
+const changeCurrentPassword = async (req, res) => {
+    try {
+      const { oldPassword, newPassword } = req.body;
+  
+      const user = await User.findById(req.user._id);
+      if (!user) throw new ApiError(404, "User Not Found!");
+  
+      const isPasswordValid = await user.isPasswordCorrect(oldPassword);
+      if (!isPasswordValid) throw new ApiError(401, "Old Password is Wrong");
+  
+      user.password = newPassword; 
+      await user.save({ validateBeforeSave: false });
+  
+      return res.status(200).json(new ApiResponse(200, {}, "Password Changed Successfully!"));
+    } catch (error) {
+      console.error("Error on Password Changing:", error);
+      return res.status(error.statuscode || 500).json({
+        statuscode: error.statuscode || 500,
+        message: error.message || "Error on Password Changing",
+        data: null,
+        success: false,
+        errors: error.errors || [],
+      });
+    }
+  };
+  
+const ChangedAccountDeatils=async(req,res)=>{
+    try {
+        const{name,email,phone}=req.body
+        if(!name || !email || !phone)throw new ApiError(404,"Fields required")
+        const user=await User.findByIdAndUpdate(
+            req.user?._id,{
+                $set:{
+                    name,email,phone
+                }
+            },{new:true}
+        ).select("-password")
+        return res
+        .status(200)
+        .json(new ApiResponse(200,user,"Account details updated successfully"))
+    } catch (error) {
+        console.error("Error on Changing Account Details:", error);
+        return res.status(error.statuscode || 500).json({
+          statuscode: error.statuscode || 500,
+          message: error.message || "Error on Changing Account Details",
+          data: null,
+          success: false,
+          errors: error.errors || [],
+        });
+      }
+}
+export {registerUser,loginUser,refreshAccessToken,logoutUser,changeCurrentPassword,ChangedAccountDeatils}

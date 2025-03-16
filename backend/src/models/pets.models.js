@@ -1,59 +1,38 @@
 import mongoose, { Schema } from "mongoose";
 import AggregatePaginate from "mongoose-aggregate-paginate-v2"
-const PetSchema = new Schema({
+const petSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
-        trim: true,
-    },
-    species: {
-        type: String,
-        enum: ['dog', 'cat', 'rabbit', 'bird', 'other'],
-        required: true,
-        trim: true,
-    },
-    breed: {
-        type: String,
-        trim: true,
     },
     age: {
         type: Number,
         required: true,
     },
-    gender: {
+    breed: {
         type: String,
-        enum: ['male', 'female'],
         required: true,
-        trim: true,
     },
-    size: {
+    species: {
         type: String,
-        enum: ['small', 'medium', 'large'],
+        enum: ['dog', 'cat', 'bird', 'other'],
         required: true,
-        trim: true,
     },
     description: {
         type: String,
-        trim: true,
     },
-    location: {
-        type: String,
-        required: true,
-        trim: true,
+    image: {
+        type: String, // Store image URLs (e.g., from Multer upload)
     },
-    status: {
-        type: String,
-        enum: ['available', 'adopted', 'pending'],
-        required: true,
-        trim: true,
+    isAdopted: {
+        type: Boolean,
+        default: false,
     },
-    images: {
-        type: [String],
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now,
-    },
-});
-PetSchema.plugin(AggregatePaginate)
-const Pet= mongoose.model("Pets",PetSchema);
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    }
+}, { timestamps: true });
+petSchema.plugin(AggregatePaginate)
+const Pet= mongoose.model("Pets",petSchema);
+export {Pet}

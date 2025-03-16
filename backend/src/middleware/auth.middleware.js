@@ -11,7 +11,7 @@ const verifyJWT= async(req,res,next)=>{
      req.user=user
      next();
    } catch (error) {
-        console.error('Logout error:', error);
+        console.error('Auth error:', error);
         return res.status(error.statuscode || 500).json({
             statuscode: error.statuscode || 500,
             message: error.message || "Authorization Error",

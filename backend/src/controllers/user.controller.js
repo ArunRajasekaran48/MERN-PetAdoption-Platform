@@ -4,7 +4,6 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { sendEmail } from "../utils/sendEmail.js"
 import jwt from "jsonwebtoken"
 import crypto from "crypto"
-
 const generateAccesstoken = async (userId)=>{
     try {
         const user= await User.findById(userId)
@@ -197,14 +196,14 @@ const requestPasswordReset= async(req,res)=>{
         if(!user)throw new ApiError(404,"User Not Found");
 
         const resetToken=crypto.randomBytes(32).toString("hex")
-        user.resetPasswordToken=resetToken
+        const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+        user.resetPasswordToken=hashedToken
         user.resetPasswordExpires=Date.now() + 3600000;
         await user.save();
         const resetLink = `http://localhost:5000/api/v1/users/reset-password/${resetToken}`;
         await sendEmail(email, 'Password Reset', `Reset your password here: ${resetLink}`, `<p>Click <a href="${resetLink}">here</a> to reset your password.</p>`);
         res
         .status(200)
-        .cookie("resetToken",resetToken)
         .json(new ApiResponse(200,"Passsword Reset Email Sent Successfully"))
     }catch (error) {
         console.error("Error on Password Reset request", error);
@@ -217,11 +216,11 @@ const requestPasswordReset= async(req,res)=>{
         });
       }
 }
-
 const resetPassword = async (req, res) => {
     try {
         const { token, newPassword } = req.body;
-        const user = await User.findOne({ resetPasswordToken: token, resetPasswordExpires: { $gt: Date.now() } });
+        const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+        const user = await User.findOne({ resetPasswordToken: hashedToken, resetPasswordExpires: { $gt: Date.now() } });
 
         if (!user) throw new ApiError(404,"Invalid or expired token")
 

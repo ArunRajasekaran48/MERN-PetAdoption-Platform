@@ -1,6 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
+import crypto from "crypto"
 const userSchema = new Schema({
   name: {
       type: String,
@@ -12,6 +13,7 @@ const userSchema = new Schema({
       required: true,
       unique: true,
       trim: true,
+      lowercase:true
   },
   password: {
       type: String,
@@ -27,6 +29,12 @@ const userSchema = new Schema({
       enum: ['adopter', 'admin'],
       required: true,
       trim: true,
+  },
+  resetPasswordToken: { 
+    type: String 
+  },
+  resetPasswordExpires: { 
+    type: Date 
   },
   createdAt: {
       type: Date,
@@ -53,4 +61,14 @@ userSchema.methods.generateAccesstoken = function () {
         { expiresIn: process.env.EXPIRES_IN } 
     );
 };
+
+userSchema.methods.generatePasswordResetToken= function (){
+    const resetToken=crypto.randomBytes(20).toString("hex")
+    this.resetPasswordToken=crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex")
+    this.resetPasswordExpires = Date.now() + 10 * 60 * 1500; // 15 minutes
+    return resetToken
+}
 export const User=mongoose.model("User",userSchema)

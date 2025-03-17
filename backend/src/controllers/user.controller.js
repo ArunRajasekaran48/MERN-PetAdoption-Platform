@@ -1,7 +1,10 @@
 import {User} from "../models/user.models.js"
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { sendEmail } from "../utils/sendEmail.js"
 import jwt from "jsonwebtoken"
+import crypto from "crypto"
+
 const generateAccesstoken = async (userId)=>{
     try {
         const user= await User.findById(userId)
@@ -158,12 +161,12 @@ const changeCurrentPassword = async (req, res) => {
         errors: error.errors || [],
       });
     }
-  };
-  
+};
+
 const ChangedAccountDeatils=async(req,res)=>{
     try {
         const{name,email,phone}=req.body
-        if(!name || !email || !phone)throw new ApiError(404,"Fields required")
+        if(!name || !email || !phone)throw new ApiError(401,"Fields required")
         const user=await User.findByIdAndUpdate(
             req.user?._id,{
                 $set:{
@@ -185,4 +188,58 @@ const ChangedAccountDeatils=async(req,res)=>{
         });
       }
 }
-export {registerUser,loginUser,refreshAccessToken,logoutUser,changeCurrentPassword,ChangedAccountDeatils}
+
+const requestPasswordReset= async(req,res)=>{
+    try {
+        const {email}=req.body
+        const user=await User.findOne({email})
+
+        if(!user)throw new ApiError(404,"User Not Found");
+
+        const resetToken=crypto.randomBytes(32).toString("hex")
+        user.resetPasswordToken=resetToken
+        user.resetPasswordExpires=Date.now() + 3600000;
+        await user.save();
+        const resetLink = `http://localhost:5000/api/v1/users/reset-password/${resetToken}`;
+        await sendEmail(email, 'Password Reset', `Reset your password here: ${resetLink}`, `<p>Click <a href="${resetLink}">here</a> to reset your password.</p>`);
+        res
+        .status(200)
+        .cookie("resetToken",resetToken)
+        .json(new ApiResponse(200,"Passsword Reset Email Sent Successfully"))
+    }catch (error) {
+        console.error("Error on Password Reset request", error);
+        return res.status(error.statuscode || 500).json({
+          statuscode: error.statuscode || 500,
+          message: error.message || "Internal Server error",
+          data: null,
+          success: false,
+          errors: error.errors || [],
+        });
+      }
+}
+
+const resetPassword = async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+        const user = await User.findOne({ resetPasswordToken: token, resetPasswordExpires: { $gt: Date.now() } });
+
+        if (!user) throw new ApiError(404,"Invalid or expired token")
+
+        user.password = newPassword;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+        res.status(200)
+        .json(new ApiResponse(200,"Password Reset Successfully!!"))
+    } catch (error) {
+        console.error("Error Password Reset:", error);
+        return res.status(error.statuscode || 500).json({
+          statuscode: error.statuscode || 500,
+          message: error.message || "Internal Server Error",
+          data: null,
+          success: false,
+          errors: error.errors || [],
+        });
+      }
+};
+export {registerUser,loginUser,refreshAccessToken,logoutUser,changeCurrentPassword,ChangedAccountDeatils,requestPasswordReset,resetPassword}

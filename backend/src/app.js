@@ -13,11 +13,10 @@ app.use(express.static('public'))
 app.use(cookieparser())
 
 import userRouter from "./routes/user.routes.js"
+import petRouter from "./routes/pets.routes.js"
 
 app.use("/api/v1/users",userRouter)
-
-
-
+app.use("/api/v1/pets",petRouter)
 
 
 export default app

@@ -38,7 +38,7 @@ const registerUser= async (req,res)=>{
             throw new ApiError(409,"Registered User Already Exists!")
         }
 
-        const user=await User.create({name,email,password,phone,role})
+       const user=await User.create({name,email,password,phone,role})
        const createdUser=await User.findById(user._id).select("-password -phone")
         if(!createdUser){
             throw new ApiError(500,"Something Went Wrong! While reg a user!")

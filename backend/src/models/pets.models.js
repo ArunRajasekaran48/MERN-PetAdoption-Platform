@@ -1,12 +1,11 @@
 import mongoose, { Schema } from "mongoose";
-import AggregatePaginate from "mongoose-aggregate-paginate-v2"
-const petSchema = new mongoose.Schema({
+const petSchema = new Schema({
     name: {
         type: String,
         required: true,
     },
     age: {
-        type: Number,
+        type: String,
         required: true,
     },
     breed: {
@@ -21,9 +20,9 @@ const petSchema = new mongoose.Schema({
     description: {
         type: String,
     },
-    image: {
-        type: String, // Store image URLs (e.g., from Multer upload)
-    },
+    images: [
+        { type: String }
+    ],
     isAdopted: {
         type: Boolean,
         default: false,
@@ -33,6 +32,4 @@ const petSchema = new mongoose.Schema({
         ref: 'User',
     }
 }, { timestamps: true });
-petSchema.plugin(AggregatePaginate)
-const Pet= mongoose.model("Pets",petSchema);
-export {Pet}
+export const Pet= mongoose.model("Pets",petSchema);

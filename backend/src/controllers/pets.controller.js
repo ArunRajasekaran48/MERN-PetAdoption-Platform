@@ -5,10 +5,10 @@ import { uploadCloudinary } from "../utils/cloudinary.js";
 
 const createPet = async (req, res) => {
     try {
-        const { name, age, breed, species, description, owner } = req.body;
+        const { name, age, breed, species, gender, description, owner } = req.body;
 
         // Validate required fields
-        if (!name || !age || !breed || !species || !owner) {
+        if (!name || !age || !breed || !species || !gender || !owner) {
             throw new ApiError(400, "Missing required pet information");
         }
 
@@ -31,8 +31,6 @@ const createPet = async (req, res) => {
         const imageUploadPromises = req.files.map(async (file) => {
             try {
                 const uploadResult = await uploadCloudinary(file.path, "pet_images");
-                
-                
                 console.log('Cloudinary Upload Successfull');
 
                 // Check if uploadResult is valid and has secure_url
@@ -81,5 +79,27 @@ const createPet = async (req, res) => {
     }
 };
 
+const getAllPets = async (req,res)=>{
+    try {
+        const{species,age,breed,gender}=req.body
+        const filter = { isAdopted: false }
+        if(species)filter.species=species
+        if(age)filter.age=age
+        if(breed)filter.breed=breed
+        if(gender)filter.gender=gender
 
-export {createPet}
+        const pets=await Pet.find(filter).populate('owner','name,email').sort({createdAt:-1})
+
+        return res.status(200).json(new ApiResponse(200,pets,"Pets Fetched successfully!"))
+    }catch (error) {
+        console.error('Fetching Error:', error);
+        return res.status(error.statusCode || 500).json({
+            statusCode: error.statusCode || 500,
+            message: error.message || "Internal Server Error",
+            data: null,
+            success: false,
+            errors: error.errors || []
+        });
+    }
+}
+export {createPet,getAllPets}

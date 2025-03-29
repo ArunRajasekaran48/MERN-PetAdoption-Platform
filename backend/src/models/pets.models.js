@@ -5,7 +5,7 @@ const petSchema = new Schema({
         required: true,
     },
     age: {
-        type: String,
+        type: Number,
         required: true,
     },
     breed: {
@@ -16,6 +16,10 @@ const petSchema = new Schema({
         type: String,
         enum: ['dog', 'cat', 'bird', 'other'],
         required: true,
+    },
+    gender:{
+        type:String,
+        required:true
     },
     description: {
         type: String,

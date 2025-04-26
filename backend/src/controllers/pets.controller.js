@@ -79,20 +79,23 @@ const createPet = async (req, res) => {
     }
 };
 
-const getAllPets = async (req,res)=>{
+const getAllPets = async (req, res) => {
     try {
-        const{species,age,breed,gender}=req.body
-        const filter = { isAdopted: false }
-        if(species)filter.species=species
-        if(age)filter.age=age
-        if(breed)filter.breed=breed
-        if(gender)filter.gender=gender
+        const { species, breed, gender, availableOnly, page = 1, limit = 10 } = req.query;
+        const filter = {};
 
-        const pets=await Pet.find(filter).populate('owner','name,email').sort({createdAt:-1})
+        if (species) filter.species = species;
+        if (breed) filter.breed = breed;
+        if (gender) filter.gender = gender;
+        if (availableOnly === 'true') filter.adoptionStatus = 'available';
 
-        return res.status(200).json(new ApiResponse(200,pets,"Pets Fetched successfully!"))
-    }catch (error) {
-        console.error('Fetching Error:', error);
+        const pets = await Pet.find(filter)
+            .skip((page - 1) * limit)
+            .limit(parseInt(limit));
+
+        return res.status(200).json(new ApiResponse(200, "Pets fetched successfully", pets));
+    } catch (error) {
+        console.error('Get Pets Error:', error);
         return res.status(error.statusCode || 500).json({
             statusCode: error.statusCode || 500,
             message: error.message || "Internal Server Error",
@@ -101,5 +104,174 @@ const getAllPets = async (req,res)=>{
             errors: error.errors || []
         });
     }
-}
-export {createPet,getAllPets}
+};
+
+const getPetById = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const pet = await Pet.findById(id);
+        if (!pet) throw new ApiError(404, "Pet not found");
+
+        return res.status(200).json(new ApiResponse(200, "Pet fetched successfully", pet));
+    } catch (error) {
+        console.error('Get Pet By Id Error:', error);
+        return res.status(error.statusCode || 500).json({
+            statusCode: error.statusCode || 500,
+            message: error.message || "Internal Server Error",
+            data: null,
+            success: false,
+            errors: error.errors || []
+        });
+    }
+};
+
+const updatePet = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, age, breed, species, description, gender } = req.body;
+
+        const pet = await Pet.findById(id);
+        if (!pet) throw new ApiError(404, "Pet not found");
+
+        if (name) pet.name = name.trim();
+        if (age) pet.age = parseInt(age);
+        if (breed) pet.breed = breed.trim();
+        if (species) pet.species = species.trim();
+        if (description) pet.description = description.trim();
+        if (gender) pet.gender = gender;
+
+        await pet.save();
+
+        return res.status(200).json(new ApiResponse(200, "Pet updated successfully", pet));
+    } catch (error) {
+        console.error('Update Pet Error:', error);
+        return res.status(error.statusCode || 500).json({
+            statusCode: error.statusCode || 500,
+            message: error.message || "Internal Server Error",
+            data: null,
+            success: false,
+            errors: error.errors || []
+        });
+    }
+};
+
+const deletePet = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const pet = await Pet.findById(id);
+        if (!pet) throw new ApiError(404, "Pet not found");
+
+        await Pet.findByIdAndDelete(id);
+
+        return res.status(200).json(new ApiResponse(200, "Pet deleted successfully", null));
+    } catch (error) {
+        console.error('Delete Pet Error:', error);
+        return res.status(error.statusCode || 500).json({
+            statusCode: error.statusCode || 500,
+            message: error.message || "Internal Server Error",
+            data: null,
+            success: false,
+            errors: error.errors || []
+        });
+    }
+};
+
+const updateAdoptionStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body; // status: 'available', 'pending', 'adopted'
+
+        const validStatuses = ['available', 'pending', 'adopted'];
+        if (!validStatuses.includes(status)) throw new ApiError(400, "Invalid adoption status");
+
+        const pet = await Pet.findById(id);
+        if (!pet) throw new ApiError(404, "Pet not found");
+
+        pet.adoptionStatus = status;
+        await pet.save();
+
+        return res.status(200).json(new ApiResponse(200, "Adoption status updated", pet));
+    } catch (error) {
+        console.error('Update Adoption Status Error:', error);
+        return res.status(error.statusCode || 500).json({
+            statusCode: error.statusCode || 500,
+            message: error.message || "Internal Server Error",
+            data: null,
+            success: false,
+            errors: error.errors || []
+        });
+    }
+};
+
+const getPetsByOwner = async (req, res) => {
+    try {
+        const { ownerId } = req.params;
+
+        const pets = await Pet.find({ owner: ownerId });
+
+        return res.status(200).json(new ApiResponse(200, "Pets fetched successfully", pets));
+    } catch (error) {
+        console.error('Get Pets By Owner Error:', error);
+        return res.status(error.statusCode || 500).json({
+            statusCode: error.statusCode || 500,
+            message: error.message || "Internal Server Error",
+            data: null,
+            success: false,
+            errors: error.errors || []
+        });
+    }
+};
+
+const updatePetImages = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { replace } = req.body; // Optional: replace = "true" to replace
+
+        const pet = await Pet.findById(id);
+        if (!pet) throw new ApiError(404, "Pet not found");
+
+        if (!req.files || req.files.length === 0) {
+            throw new ApiError(400, "Please provide at least one image");
+        }
+
+        if (req.files.length > 5) {
+            throw new ApiError(400, "Maximum 5 images allowed");
+        }
+
+        const imageUploadPromises = req.files.map(async (file) => {
+            const result = await uploadCloudinary(file.path, "pet_images");
+            if (result && result.secure_url) return result.secure_url;
+            return null;
+        });
+
+        const imageUrls = (await Promise.all(imageUploadPromises)).filter(url => url !== null);
+
+        if (imageUrls.length === 0) {
+            throw new ApiError(500, "Image upload failed");
+        }
+
+        if (replace === 'true') {
+            pet.images = imageUrls;
+        } else {
+            pet.images = [...pet.images, ...imageUrls].slice(0, 5); // Max 5
+        }
+
+        await pet.save();
+
+        return res.status(200).json(new ApiResponse(200, "Pet images updated", pet));
+    } catch (error) {
+        console.error('Update Pet Images Error:', error);
+        return res.status(error.statusCode || 500).json({
+            statusCode: error.statusCode || 500,
+            message: error.message || "Internal Server Error",
+            data: null,
+            success: false,
+            errors: error.errors || []
+        });
+    }
+};
+
+export {createPet,getAllPets,getPetById,deletePet,updatePet,updateAdoptionStatus,getPetsByOwner,updatePetImages};
+

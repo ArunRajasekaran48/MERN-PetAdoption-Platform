@@ -27,9 +27,10 @@ const petSchema = new Schema({
     images: [
         { type: String }
     ],
-    isAdopted: {
-        type: Boolean,
-        default: false,
+    adoptionStatus: {
+        type: String,
+        enum: ['available', 'pending', 'adopted'],
+        default: 'available'
     },
     owner: {
         type: mongoose.Schema.Types.ObjectId,

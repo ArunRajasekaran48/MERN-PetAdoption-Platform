@@ -6,7 +6,6 @@ import { uploadCloudinary } from "../utils/cloudinary.js";
 const createPet = async (req, res) => {
     try {
         const { name, age, breed, species, gender, description, owner } = req.body;
-
         // Validate required fields
         if (!name || !age || !breed || !species || !gender || !owner) {
             throw new ApiError(400, "Missing required pet information");
@@ -58,14 +57,13 @@ const createPet = async (req, res) => {
             age: parseInt(age),
             breed: breed.trim(),
             species: species.trim(),
+            gender: gender.trim(),
             description: description ? description.trim() : "",
             images: imageUrls,
             owner,
         });
-
         // Save pet to database
         await pet.save();
-
         return res.status(201).json(new ApiResponse(201, "Pet Created Successfully", pet));
     } catch (error) {
         console.error('Pet Creation Error:', error);
@@ -134,6 +132,10 @@ const updatePet = async (req, res) => {
         const pet = await Pet.findById(id);
         if (!pet) throw new ApiError(404, "Pet not found");
 
+        if (pet.owner.toString() !== req.user._id.toString()) {
+            throw new ApiError(403, "You are not allowed to update this pet");
+        }
+
         if (name) pet.name = name.trim();
         if (age) pet.age = parseInt(age);
         if (breed) pet.breed = breed.trim();
@@ -163,6 +165,10 @@ const deletePet = async (req, res) => {
         const pet = await Pet.findById(id);
         if (!pet) throw new ApiError(404, "Pet not found");
 
+        if (pet.owner.toString() !== req.user._id.toString()) {
+            throw new ApiError(403, "You are not allowed to update this pet");
+        }
+        
         await Pet.findByIdAndDelete(id);
 
         return res.status(200).json(new ApiResponse(200, "Pet deleted successfully", null));

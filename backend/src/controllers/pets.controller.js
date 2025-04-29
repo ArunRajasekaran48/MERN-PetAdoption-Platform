@@ -1,9 +1,10 @@
 import { Pet } from "../models/pets.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { uploadCloudinary } from "../utils/cloudinary.js";
+import { uploadCloudinary,deleteFromCloudinary } from "../utils/cloudinary.js";
 
 const createPet = async (req, res) => {
+    let imageUrls = [];
     try {
         const { name, age, breed, species, gender, description, owner } = req.body;
         // Validate required fields
@@ -67,6 +68,11 @@ const createPet = async (req, res) => {
         return res.status(201).json(new ApiResponse(201, "Pet Created Successfully", pet));
     } catch (error) {
         console.error('Pet Creation Error:', error);
+         // If images were uploaded but error occurred, clean them up
+         if (imageUrls.length > 0) {
+            const publicIds = imageUrls.map(img => img.public_id);
+            await destroyCloudinaryImages(publicIds);
+        }
         return res.status(error.statusCode || 500).json({
             statusCode: error.statusCode || 500,
             message: error.message || "Internal Server Error",
@@ -269,6 +275,7 @@ const updatePetImages = async (req, res) => {
         return res.status(200).json(new ApiResponse(200, "Pet images updated", pet));
     } catch (error) {
         console.error('Update Pet Images Error:', error);
+
         return res.status(error.statusCode || 500).json({
             statusCode: error.statusCode || 500,
             message: error.message || "Internal Server Error",

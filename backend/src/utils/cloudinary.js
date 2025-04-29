@@ -25,20 +25,12 @@ const uploadCloudinary = async (localFilePath, folderName = "pet_images") => {
             folder: folderName,
             resource_type: "auto"
         });
-
-        // console.log('Full Cloudinary Upload Response:', {
-        //     url: response.url,
-        //     secure_url: response.secure_url,
-        //     public_id: response.public_id
-        // });
-
         // Remove local file
         fs.unlinkSync(localFilePath);
 
         return response;
     } catch (error) {
         console.error('Cloudinary Upload Error:', error);
-
         // Attempt to remove local file
         try {
             fs.unlinkSync(localFilePath);
@@ -50,4 +42,16 @@ const uploadCloudinary = async (localFilePath, folderName = "pet_images") => {
     }
 };
 
-export {uploadCloudinary}
+const deleteFromCloudinary= async(publicIds)=>{
+    try {
+        const destroyPromises = publicIds.map(publicId =>
+            cloudinary.uploader.destroy(publicId)
+        );
+        await Promise.all(destroyPromises);
+        console.error('Error deleting images from Cloudinary:', error);
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+}
+export {uploadCloudinary,deleteFromCloudinary}

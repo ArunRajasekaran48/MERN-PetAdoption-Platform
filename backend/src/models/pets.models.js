@@ -37,4 +37,4 @@ const petSchema = new Schema({
         ref: 'User',
     }
 }, { timestamps: true });
-export const Pet= mongoose.model("Pets",petSchema);
+export const Pet= mongoose.model("Pet",petSchema);

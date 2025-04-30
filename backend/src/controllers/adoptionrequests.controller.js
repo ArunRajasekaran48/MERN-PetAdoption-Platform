@@ -214,21 +214,29 @@ const deleteAdoptionRequest = async (req, res) => {
     }
 };
 
-//To get all adoption requests of a user
-const getUserAdoptionRequests = async (req, res) => {
+// Get all outgoing adoption requests (requests made by the user)
+const getOutgoingAdoptionRequests = async (req, res) => {
     try {
-        const { userId } = req.params;
+        const userId = req.user._id; // Get user ID from authenticated user
         const { status } = req.query;
         const filter = { userId };
 
         if (status) filter.status = status;
 
         const requests = await AdoptionRequest.find(filter)
-            .populate('petId', 'name species breed')
-            .populate('userId', 'name email phone');
-        return res.status(200).json(new ApiResponse(200, "User adoption requests fetched successfully", requests));
+            .populate({
+                path: 'petId',
+                select: 'name species breed age images owner',
+                populate: {
+                    path: 'owner',
+                    select: 'name email phone'
+                }
+            })
+            .sort({ requestedAt: -1 }); // Sort by most recent first
+
+        return res.status(200).json(new ApiResponse(200, requests, "Outgoing adoption requests fetched successfully"));
     } catch (error) {
-        console.error('Get User Adoption Requests Error:', error);
+        console.error('Get Outgoing Adoption Requests Error:', error);
         return res.status(error.statusCode || 500).json({
             statusCode: error.statusCode || 500,
             message: error.message || "Internal Server Error",
@@ -239,22 +247,34 @@ const getUserAdoptionRequests = async (req, res) => {
     }
 };
 
-const getPetAdoptionRequests = async (req, res) => {
+// Get all incoming adoption requests (requests for user's pets)
+const getIncomingAdoptionRequests = async (req, res) => {
     try {
-        const { petId } = req.params;
-        const { status, page = 1, limit = 10 } = req.query;
-        const filter = { petId };
+        const userId = req.user._id; // Get user ID from authenticated user
+        const { status } = req.query;
 
+        // First find all pets owned by the user
+        const userPets = await Pet.find({ owner: userId });
+        const petIds = userPets.map(pet => pet._id);
+
+        const filter = { petId: { $in: petIds } };
         if (status) filter.status = status;
 
         const requests = await AdoptionRequest.find(filter)
-            .populate('userId', 'name email')
-            .skip((page - 1) * limit)
-            .limit(parseInt(limit));
+            .populate({
+                path: 'petId',
+                select: 'name species breed age images owner',
+                populate: {
+                    path: 'owner',
+                    select: 'name email phone'
+                }
+            })
+            .populate('userId', 'name email phone address')
+            .sort({ requestedAt: -1 }); // Sort by most recent first
 
-        return res.status(200).json(new ApiResponse(200, "Pet adoption requests fetched successfully", requests));
+        return res.status(200).json(new ApiResponse(200, requests, "Incoming adoption requests fetched successfully"));
     } catch (error) {
-        console.error('Get Pet Adoption Requests Error:', error);
+        console.error('Get Incoming Adoption Requests Error:', error);
         return res.status(error.statusCode || 500).json({
             statusCode: error.statusCode || 500,
             message: error.message || "Internal Server Error",
@@ -265,4 +285,4 @@ const getPetAdoptionRequests = async (req, res) => {
     }
 };
 
-export {createAdoptionRequest, getAllAdoptionRequests, getAdoptionRequestById, updateAdoptionRequestStatus, deleteAdoptionRequest,getUserAdoptionRequests, getPetAdoptionRequests}; 
+export { createAdoptionRequest, getAllAdoptionRequests, getAdoptionRequestById, updateAdoptionRequestStatus, deleteAdoptionRequest, getOutgoingAdoptionRequests, getIncomingAdoptionRequests};

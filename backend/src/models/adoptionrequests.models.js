@@ -25,5 +25,5 @@ const AdoptionRequestSchema = new Schema({
         type: Date,
     },
 });
-const AdoptionRequest =mongoose.model("Adoptionrequest",AdoptionRequestSchema)
+const AdoptionRequest =mongoose.model("AdoptionRequest",AdoptionRequestSchema)
 export { AdoptionRequest}

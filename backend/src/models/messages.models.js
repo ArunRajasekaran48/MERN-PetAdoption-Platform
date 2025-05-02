@@ -11,11 +11,23 @@ const MessageSchema = new Schema({
         ref: 'User',
         required: true,
     },
-    content: {
+    encryptedContent: {
         type: String,
         required: true,
-        trim: true,
     },
+    iv: {
+        type: String,
+        required: true,
+    },
+    read: {
+        type: Boolean,
+        default: false,
+    },
+    deletedBy: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: []
+    }],
     timestamp: {
         type: Date,
         default: Date.now,

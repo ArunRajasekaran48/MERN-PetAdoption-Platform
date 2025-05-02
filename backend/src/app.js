@@ -14,9 +14,11 @@ app.use(cookieparser())
 
 import userRouter from "./routes/user.routes.js"
 import petRouter from "./routes/pets.routes.js"
-import adoptionrequestRouter from "./routes/adoptionrequests.router.js"
+import adoptionrequestRouter from "./routes/adoptionrequests.routes.js"
+import messagesRouter from "./routes/message.routes.js"
 app.use("/api/v1/users",userRouter)
 app.use("/api/v1/pets",petRouter)
 app.use("/api/v1/adoptionrequests",adoptionrequestRouter)
+app.use("/api/v1/messages",messagesRouter)
 
 export default app

@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { verifyJWT } from "../middleware/auth.middleware.js";
 import { deleteConversation, deleteMessage, getConversation, getUnreadMessageCount, listConversations, markMessagesAsRead, sendMessage } from "../controllers/messages.controller.js";
-import { get } from "mongoose";
 const router=Router()
 
 router.post("/send-message",verifyJWT,sendMessage);

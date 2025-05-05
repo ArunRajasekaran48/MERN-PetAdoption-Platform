@@ -99,7 +99,6 @@ const markMessagesAsRead = async (req, res) => {
     try {
         const { senderId } = req.params;
         const receiverId = req.user._id;
-
         await Messages.updateMany(
             { senderId, receiverId, read: false },
             { $set: { read: true } }

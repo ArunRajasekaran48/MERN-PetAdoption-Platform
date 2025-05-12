@@ -30,6 +30,10 @@ const userSchema = new Schema({
       required: true,
       trim: true,
   },
+  isBlocked: {
+      type: Boolean,
+      default: false,
+  },
   resetPasswordToken: { 
     type: String 
   },

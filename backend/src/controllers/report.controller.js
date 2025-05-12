@@ -1,7 +1,6 @@
-import { Report } from "../models/report.models";
-import { ApiError} from "../utils/ApiError";
-import { ApiResponse } from "../utils/ApiResponse";
-
+import { Report } from "../models/report.models.js";
+import { ApiError} from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 
 const reportUser = async (req, res) => {
     try {
@@ -25,11 +24,14 @@ const reportUser = async (req, res) => {
             reason: reason.trim(),
         });
 
-        return res.status(201).json(new ApiResponse(201, "User reported successfully", report));
+        return res.status(201).json(new ApiResponse(201, report, "User reported successfully"));
     } catch (error) {
         return res.status(error.statusCode || 500).json({
+            statusCode: error.statusCode || 500,
             message: error.message || "Internal Server Error",
+            data: null,
             success: false,
+            errors: error.errors || []
         });
     }
 };
@@ -44,7 +46,7 @@ const reportReview = async (req, res) => {
         }
 
         const existingReport = await Report.findOne({ reporterId, reviewId });
-        if (existingReport) throw new ApiError(400, "You have already reported this user and please wait for the admin to solve this!");
+        if (existingReport) throw new ApiError(400, "You have already reported this review and please wait for the admin to solve this!");
 
         const report = await Report.create({
             reporterId,
@@ -52,49 +54,16 @@ const reportReview = async (req, res) => {
             reason: reason.trim(),
         });
 
-        return res.status(201).json(new ApiResponse(201, "Review reported successfully", report));
+        return res.status(201).json(new ApiResponse(201, report, "Review reported successfully"));
     } catch (error) {
         return res.status(error.statusCode || 500).json({
+            statusCode: error.statusCode || 500,
             message: error.message || "Internal Server Error",
+            data: null,
             success: false,
+            errors: error.errors || []
         });
     }
 };
 
-const getAllReports = async (req, res) => {
-    try {
-        const reports = await Report.find()
-            .populate("reporterId", "name email")
-            .populate("reportedUserId", "name email")
-            .populate("reviewId")
-            .sort({ createdAt: -1 });
-
-        return res.status(200).json(new ApiResponse(200, "All reports fetched", reports));
-    } catch (error) {
-        return res.status(500).json({ message: error.message, success: false });
-    }
-};
-
-const updateReportStatus = async (req, res) => {
-    try {
-        const { reportId } = req.params;
-        const { status } = req.body;
-
-        const updatedReport = await Report.findByIdAndUpdate(
-            reportId,
-            { status },
-            { new: true }
-        );
-
-        if (!updatedReport) throw new ApiError(404, "Report not found");
-
-        return res.status(200).json(new ApiResponse(200, "Report updated", updatedReport));
-    } catch (error) {
-        return res.status(error.statusCode || 500).json({
-            message: error.message,
-            success: false,
-        });
-    }
-};
-
-export {reportUser,reportReview,getAllReports,updateReportStatus}
+export { reportUser, reportReview }

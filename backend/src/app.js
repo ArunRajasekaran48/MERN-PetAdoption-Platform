@@ -18,12 +18,13 @@ import adoptionrequestRouter from "./routes/adoptionrequests.routes.js"
 import messagesRouter from "./routes/message.routes.js"
 import reviewRouter from "./routes/review.routes.js"
 import reportRouter from "./routes/report.routes.js"
-
+import adminRouter from "./routes/admin.routes.js"
 app.use("/api/v1/users",userRouter)
 app.use("/api/v1/pets",petRouter)
 app.use("/api/v1/adoptionrequests",adoptionrequestRouter)
 app.use("/api/v1/messages",messagesRouter)
 app.use("/api/v1/reviews",reviewRouter)
 app.use("/api/v1/report",reportRouter)
+app.use("/api/v1/admin",adminRouter)
 
 export default app

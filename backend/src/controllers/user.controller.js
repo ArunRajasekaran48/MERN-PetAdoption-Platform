@@ -63,7 +63,7 @@ const loginUser= async (req,res)=>{
 
     try {
         const {name,email,password}=req.body
-        if(!email || !password || !name)throw new ApiError(400,"Please Enter all credentials")
+        if(!email || !password)throw new ApiError(400,"Please Enter all credentials")
         
         const user= await User.findOne({
             $or:[{name},{email}]

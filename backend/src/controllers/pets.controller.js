@@ -71,7 +71,7 @@ const createPet = async (req, res) => {
          // If images were uploaded but error occurred, clean them up
          if (imageUrls.length > 0) {
             const publicIds = imageUrls.map(img => img.public_id);
-            await destroyCloudinaryImages(publicIds);
+            await deleteFromCloudinary(publicIds);
         }
         return res.status(error.statusCode || 500).json({
             statusCode: error.statusCode || 500,
@@ -85,18 +85,15 @@ const createPet = async (req, res) => {
 
 const getAllPets = async (req, res) => {
     try {
-        const { species, breed, gender, availableOnly, page = 1, limit = 10 } = req.query;
+        const { species, breed, gender, availableOnly} = req.query;
         const filter = {};
 
         if (species) filter.species = species;
         if (breed) filter.breed = breed;
         if (gender) filter.gender = gender;
         if (availableOnly === 'true') filter.adoptionStatus = 'available';
-
         const pets = await Pet.find(filter)
-            .skip((page - 1) * limit)
-            .limit(parseInt(limit));
-
+            .populate('owner', 'name phone email');
         return res.status(200).json(new ApiResponse(200, "Pets fetched successfully", pets));
     } catch (error) {
         console.error('Get Pets Error:', error);
@@ -109,7 +106,6 @@ const getAllPets = async (req, res) => {
         });
     }
 };
-
 const getPetById = async (req, res) => {
     try {
         const { id } = req.params;

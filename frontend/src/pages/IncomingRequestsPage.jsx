@@ -1,0 +1,145 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '../context/ToastContext';
+import { getIncomingAdoptionRequests, updateAdoptionRequestStatus } from '../services/adoptionService';
+
+const IncomingRequestsPage = () => {
+  const navigate = useNavigate();
+  const { showToast } = useToast();
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchIncomingRequests();
+  }, []);
+
+  const fetchIncomingRequests = async () => {
+    try {
+      setLoading(true);
+      const response = await getIncomingAdoptionRequests();
+      if (response.success) {
+        setRequests(response.data);
+      } else {
+        setError(response.message);
+      }
+    } catch (error) {
+      setError('Failed to fetch incoming requests');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStatusUpdate = async (requestId, newStatus) => {
+    try {
+      const response = await updateAdoptionRequestStatus(requestId, newStatus);
+      if (response.success) {
+        showToast(`Request ${newStatus.toLowerCase()} successfully`);
+        // Refresh the requests list
+        fetchIncomingRequests();
+      } else {
+        showToast(response.message || 'Failed to update request status', 'error');
+      }
+    } catch (error) {
+      showToast('Failed to update request status', 'error');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <strong className="font-bold">Error!</strong>
+          <span className="block sm:inline">{error}</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex items-center justify-between mb-8">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          Back
+        </button>
+        <h1 className="text-3xl font-bold text-gray-800">Incoming Requests</h1>
+        <div className="w-24"></div>
+      </div>
+
+      {requests.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-gray-600">No incoming requests yet</p>
+        </div>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {requests.map((request) => (
+            <div key={request._id} className="bg-white rounded-lg shadow-md p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <img
+                  src={request.petId?.images?.[0] || '/placeholder-pet.jpg'}
+                  alt={request.petId?.name || 'Pet'}
+                  className="w-16 h-16 rounded-full object-cover"
+                />
+                <div>
+                  <h3 className="font-semibold text-lg">{request.petId?.name || 'Unknown Pet'}</h3>
+                  <p className="text-gray-600">{request.petId?.breed || ''}</p>
+                </div>
+              </div>
+              
+              <div className="mb-4">
+                <p className="text-gray-700">
+                  <span className="font-medium">Requested by:</span> {request.userId?.name || 'Unknown'}
+                </p>
+                <p className="text-gray-700">
+                  <span className="font-medium">Status:</span>{' '}
+                  <span className={`capitalize ${
+                    request.status === 'pending' ? 'text-yellow-600' :
+                    request.status === 'accepted' ? 'text-green-600' :
+                    'text-red-600'
+                  }`}>
+                    {request.status}
+                  </span>
+                </p>
+              </div>
+
+              {request.status === 'pending' && (
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => handleStatusUpdate(request._id, 'accepted')}
+                    className="flex-1 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                  >
+                    Accept
+                  </button>
+                  <button
+                    onClick={() => handleStatusUpdate(request._id, 'rejected')}
+                    className="flex-1 bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                  >
+                    Reject
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default IncomingRequestsPage; 

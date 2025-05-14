@@ -196,15 +196,40 @@ const requestPasswordReset= async(req,res)=>{
         if(!user)throw new ApiError(404,"User Not Found");
 
         const resetToken=crypto.randomBytes(32).toString("hex")
+        console.log("Generated reset token:", resetToken); // Debug log
+
         const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
         user.resetPasswordToken=hashedToken
         user.resetPasswordExpires=Date.now() + 3600000;
         await user.save();
-        const resetLink = `http://localhost:5000/api/v1/users/reset-password/${resetToken}`;
-        await sendEmail(email, 'Password Reset', `Reset your password here: ${resetLink}`, `<p>Click <a href="${resetLink}">here</a> to reset your password.</p>`);
-        res
-        .status(200)
-        .json(new ApiResponse(200,"Passsword Reset Email Sent Successfully"))
+        
+        // Create the reset link with the token
+        const resetLink = `http://localhost:5173/reset-password?token=${resetToken}`;
+        console.log("Reset link:", resetLink); // Debug log
+        
+        // Create a more detailed email template
+        const emailSubject = 'Password Reset Request';
+        const emailText = `You requested a password reset. Click the link below to reset your password:\n${resetLink}\n\nThis link will expire in 1 hour.`;
+        const emailHtml = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #333;">Password Reset Request</h2>
+                <p>You requested a password reset. Click the button below to reset your password:</p>
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="${resetLink}" 
+                       style="background-color: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
+                        Reset Password
+                    </a>
+                </div>
+                <p style="color: #666; font-size: 14px;">This link will expire in 1 hour.</p>
+                <p style="color: #666; font-size: 14px;">If you didn't request this, please ignore this email.</p>
+                <p style="color: #666; font-size: 14px;">Or copy and paste this link in your browser: ${resetLink}</p>
+            </div>
+        `;
+
+        await sendEmail(email, emailSubject, emailText, emailHtml);
+        
+        res.status(200)
+        .json(new ApiResponse(200, "Password Reset Email Sent Successfully"))
     }catch (error) {
         console.error("Error on Password Reset request", error);
         return res.status(error.statuscode || 500).json({
@@ -241,4 +266,39 @@ const resetPassword = async (req, res) => {
         });
       }
 };
-export {registerUser,loginUser,refreshAccessToken,logoutUser,changeCurrentPassword,ChangedAccountDeatils,requestPasswordReset,resetPassword}
+
+const verifyResetToken = async (req, res) => {
+    try {
+        const { token } = req.params;
+        console.log("Received token:", token); // Debug log
+
+        if (!token) {
+            console.log("No token provided"); // Debug log
+            return res.redirect(`http://localhost:5173/reset-password?error=invalid_token`);
+        }
+
+        const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+        console.log("Hashed token:", hashedToken); // Debug log
+
+        const user = await User.findOne({ 
+            resetPasswordToken: hashedToken, 
+            resetPasswordExpires: { $gt: Date.now() } 
+        });
+
+        console.log("Found user:", user ? "Yes" : "No"); // Debug log
+
+        if (!user) {
+            console.log("Invalid or expired token"); // Debug log
+            return res.redirect(`http://localhost:5173/reset-password?error=invalid_token`);
+        }
+
+        // Redirect to frontend reset password page with the token
+        console.log("Redirecting with token:", token); // Debug log
+        return res.redirect(`http://localhost:5173/reset-password?token=${token}`);
+    } catch (error) {
+        console.error("Error verifying reset token:", error);
+        return res.redirect(`http://localhost:5173/reset-password?error=server_error`);
+    }
+};
+
+export {registerUser,loginUser,refreshAccessToken,logoutUser,changeCurrentPassword,ChangedAccountDeatils,requestPasswordReset,resetPassword,verifyResetToken}

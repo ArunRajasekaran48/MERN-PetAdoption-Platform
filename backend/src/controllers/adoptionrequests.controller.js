@@ -12,13 +12,15 @@ const createAdoptionRequest = async (req, res) => {
             throw new ApiError(400, "Missing required fields: userId and petId");
         }
 
-        // Check if pet exists and is available
+        // Check if pet exists
         const pet = await Pet.findById(petId);
         if (!pet) {
             throw new ApiError(404, "Pet not found");
         }
-        if (pet.adoptionStatus !== 'available') {
-            throw new ApiError(400, "Pet is not available for adoption");
+        
+        // Only prevent adoption if pet is already adopted
+        if (pet.adoptionStatus === 'adopted') {
+            throw new ApiError(400, "Pet is already adopted");
         }
 
         // Check if user exists
@@ -31,11 +33,21 @@ const createAdoptionRequest = async (req, res) => {
             throw new ApiError(400, "You cannot adopt your own pet");
         }
 
-        // Check if request already exists
-        const existingRequest = await AdoptionRequest.findOne({ userId, petId });
+        // Check if user already has a pending request for this pet
+        const existingRequest = await AdoptionRequest.findOne({ 
+            userId, 
+            petId,
+            status: 'pending'
+        });
         if (existingRequest) {
-            throw new ApiError(400, "Adoption request already exists");
+            throw new ApiError(400, "You already have a pending request for this pet");
         }
+
+        // Get count of pending requests for this pet
+        const pendingRequestsCount = await AdoptionRequest.countDocuments({
+            petId,
+            status: 'pending'
+        });
 
         // Create adoption request
         const adoptionRequest = new AdoptionRequest({
@@ -44,9 +56,11 @@ const createAdoptionRequest = async (req, res) => {
             status: 'pending'
         });
 
-        // Update pet status to pending
-        pet.adoptionStatus = 'pending';
-        await pet.save();
+        // Only update pet status to pending if this is the first request
+        if (pendingRequestsCount === 0) {
+            pet.adoptionStatus = 'pending';
+            await pet.save();
+        }
 
         await adoptionRequest.save();
         return res.status(201).json(new ApiResponse(201, "Adoption request created successfully", adoptionRequest));
@@ -70,13 +84,15 @@ const getAllAdoptionRequests = async (req, res) => {
         if (status) filter.status = status;
         if (userId) filter.userId = userId;
         if (petId) filter.petId = petId;
+        
+        const totalCount = await AdoptionRequest.countDocuments(filter);
         const requests = await AdoptionRequest.find(filter)
             .populate('userId', 'name email phone')
             .populate('petId', 'name species breed')
             .skip((page - 1) * limit)
             .limit(parseInt(limit));
 
-        return res.status(200).json(new ApiResponse(200, "Adoption requests fetched successfully", requests));
+        return res.status(200).json(new ApiResponse(200, { requests, totalCount }, "Adoption requests fetched successfully"));
     } catch (error) {
         console.error('Get Adoption Requests Error:', error);
         return res.status(error.statusCode || 500).json({
@@ -152,6 +168,15 @@ const getAdoptionRequestById = async (req, res) => {
             await pet.save();
             request.approvedAt = new Date();
         }
+        // If rejecting, update pet status back to available
+        else if (status === 'rejected') {
+            const pet = await Pet.findById(request.petId);
+            if (!pet) {
+                throw new ApiError(404, "Pet not found");
+            }
+            pet.adoptionStatus = 'available';
+            await pet.save();
+        }
 
         request.status = status;
         await request.save();
@@ -182,12 +207,6 @@ const deleteAdoptionRequest = async (req, res) => {
         if (!pet) {
             throw new ApiError(404, "Pet not found");
         }
-
-        // Check if the current user is the pet owner
-        if (pet.owner.toString() !== req.user._id.toString()) {
-            throw new ApiError(403, "Only the pet owner can delete the adoption request");
-        }
-
         // If request is pending, update pet status back to available
         if (request.status === 'pending') {
             const pet = await Pet.findById(request.petId);

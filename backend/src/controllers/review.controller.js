@@ -23,7 +23,12 @@ const getReviewsForPet = async (req, res) => {
         const { petId } = req.params;
         const reviews = await Review.find({ petId }).populate("userId", "name" );
 
-        return res.status(200).json(new ApiResponse(200, "Reviews fetched", reviews));
+        // Return reviews array in 'data' field, with a message
+        return res.status(200).json({
+            success: true,
+            message: "Reviews fetched",
+            data: reviews
+        });
     } catch (error) {
         return res.status(error.statusCode || 500).json({ message: error.message, success: false });
     }
@@ -40,7 +45,11 @@ const getAverageRating = async (req, res) => {
 
         const averageRating = result.length > 0 ? result[0].averageRating : 0;
 
-        return res.status(200).json(new ApiResponse(200, "Average rating fetched", { averageRating }));
+        return res.status(200).json({
+            success: true,
+            message: "Average rating fetched",
+            data: { averageRating }
+        });
     } catch (error) {
         return res.status(error.statusCode || 500).json({ message: error.message, success: false });
     }

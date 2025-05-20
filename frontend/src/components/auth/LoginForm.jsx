@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import { loginUser } from "../../services/authService"
 import dogImage from '../../assets/dog1.jpg'
 
@@ -8,7 +8,8 @@ const LoginForm = () => {
     email: "",
     password: "",
   })
-
+  const location = useLocation()
+  const navigate = useNavigate()
   const [errors, setErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState("")
@@ -57,8 +58,9 @@ const LoginForm = () => {
           // Store token and user data
           localStorage.setItem("token", response.data.data.token)
           localStorage.setItem("user", JSON.stringify(response.data.data))
-          // Redirect to home page
-          window.location.href = "/home"
+          // Redirect to the intended destination or home page
+          const from = location.state?.from || "/home"
+          navigate(from)
         } else {
           setSubmitError(response.message || "Invalid email or password. Please try again.")
         }

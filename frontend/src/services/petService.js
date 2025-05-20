@@ -100,3 +100,78 @@ export const updatePetImages = async (petId, files, replace = false) => {
     throw handleApiError(error);
   }
 };
+
+export const createPet = async (formData) => {
+  try {
+    const response = await axios.post(`${API_URL}/create-pet`, formData, {
+      withCredentials: true
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error in createPet:', error);
+    throw handleApiError(error);
+  }
+};
+
+export const getPetReviews = async (petId) => {
+  try {
+    const response = await axios.get(`${API_URL.replace('/pets', '')}/reviews/get-Reviews-for-pet/${petId}`, {
+      withCredentials: true
+    });
+    return {
+      success: true,
+      data: response.data.data
+    };
+  } catch (error) {
+    console.error('Error in getPetReviews:', error);
+    throw handleApiError(error);
+  }
+};
+
+export const getPetAverageRating = async (petId) => {
+  try {
+    const response = await axios.get(`${API_URL.replace('/pets', '')}/reviews/get-average-ratingOf-pet/${petId}`, {
+      withCredentials: true
+    });
+    return {
+      success: true,
+      data: response.data.data
+    };
+  } catch (error) {
+    console.error('Error in getPetAverageRating:', error);
+    throw handleApiError(error);
+  }
+};
+
+export const updateReview = async (reviewId, reviewData) => {
+  try {
+    const response = await axios.put(
+      `${API_URL.replace('/pets', '')}/reviews/update-review/${reviewId}`,
+      reviewData,
+      { withCredentials: true }
+    );
+    return {
+      success: true,
+      data: response.data.data
+    };
+  } catch (error) {
+    console.error('Error in updateReview:', error);
+    throw handleApiError(error);
+  }
+};
+
+export const deleteReview = async (reviewId) => {
+  try {
+    const response = await axios.delete(
+      `${API_URL.replace('/pets', '')}/reviews/delete-review/${reviewId}`,
+      { withCredentials: true }
+    );
+    return {
+      success: true,
+      data: response.data.data
+    };
+  } catch (error) {
+    console.error('Error in deleteReview:', error);
+    throw handleApiError(error);
+  }
+};

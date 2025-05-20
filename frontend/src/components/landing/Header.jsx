@@ -58,19 +58,13 @@ const Header = () => {
     <header className="sticky top-0 z-50 bg-gradient-to-r from-blue-50 to-orange-50 shadow-sm">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center">
-          <Link to="/" className="text-2xl font-bold text-rose-600">
-            Paw<span className="text-violet-600">Pal</span>
+          <Link to="/" className="flex items-center">
+            <img src="/src/assets/pawpal_logo-r.png" alt="PawPal Logo" className="h-20 w-32" />
           </Link>
         </div>
-
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
-          <button
-            className="font-medium hover:text-rose-600 transition-colors bg-transparent border-none outline-none cursor-pointer"
-            onClick={() => navigate(isLoggedIn ? '/home' : '/login')}
-          >
-            Home
-          </button>
+          
           <button
             className="font-medium hover:text-rose-600 transition-colors bg-transparent border-none outline-none cursor-pointer"
             onClick={() => navigate(isLoggedIn ? '/home' : '/login')}
@@ -79,13 +73,12 @@ const Header = () => {
           </button>
           <button
             className="font-medium hover:text-rose-600 transition-colors bg-transparent border-none outline-none cursor-pointer"
-            onClick={() => alert('Feature coming soon!')}
+            onClick={() => navigate(isLoggedIn ? '/list-pet' : '/login', { state: { from: '/list-pet' } })}
           >
             List a Pet
           </button>
           <button
             className="font-medium hover:text-rose-600 transition-colors bg-transparent border-none outline-none cursor-pointer"
-            onClick={() => alert('Feature coming soon!')}
           >
             Reviews
           </button>
@@ -178,7 +171,7 @@ const Header = () => {
             </button>
             <button
               className="font-medium hover:text-rose-600 transition-colors bg-transparent border-none outline-none cursor-pointer text-left"
-              onClick={() => alert('Feature coming soon!')}
+              onClick={() => { setIsMenuOpen(false); navigate(isLoggedIn ? '/list-pet' : '/login', { state: { from: '/list-pet' } }); }}
             >
               List a Pet
             </button>

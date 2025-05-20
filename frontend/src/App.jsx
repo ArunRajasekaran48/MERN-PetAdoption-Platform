@@ -11,7 +11,7 @@ import ResetPassword from './pages/ResetPassword';
 import EditProfile from './pages/EditProfile';
 import IncomingRequestsPage from './pages/IncomingRequestsPage';
 import OutgoingRequestsPage from './pages/OutgoingRequestsPage';
-
+import ListPetPage from './pages/ListPetPage';
 function App() {
   return (
     <ToastProvider>
@@ -28,6 +28,7 @@ function App() {
           <Route path="/edit-profile" element={<EditProfile />} />
           <Route path="/incoming-requests" element={<IncomingRequestsPage />} />
           <Route path="/outgoing-requests" element={<OutgoingRequestsPage />} />
+          <Route path="/list-pet" element={<ListPetPage />} />
         </Routes>
       </Router>
     </ToastProvider>

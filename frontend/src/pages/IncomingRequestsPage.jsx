@@ -121,7 +121,7 @@ const IncomingRequestsPage = () => {
               {request.status === 'pending' && (
                 <div className="flex gap-3">
                   <button
-                    onClick={() => handleStatusUpdate(request._id, 'accepted')}
+                    onClick={() => handleStatusUpdate(request._id, 'approved')}
                     className="flex-1 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                   >
                     Accept

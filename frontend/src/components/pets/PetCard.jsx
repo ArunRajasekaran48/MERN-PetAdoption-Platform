@@ -21,6 +21,11 @@ const PetCard = ({ pet }) => {
           alt={pet.name}
           className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
         />
+        {pet.adoptionStatus === 'adopted' && (
+          <span className="absolute top-2 left-2 bg-purple-700 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-10">
+            Adopted
+          </span>
+        )}
         {/* <div className="absolute top-3 right-3">
           <button 
             className="p-2 bg-white rounded-full shadow-md hover:bg-purple-50 transition-colors"

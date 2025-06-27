@@ -1,6 +1,8 @@
 import { Review } from "../models/reviews.models.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
+
+
 import mongoose from "mongoose";
 const addReview = async (req, res) => {
     try {
@@ -17,6 +19,28 @@ const addReview = async (req, res) => {
         return res.status(error.statusCode || 500).json({ message: error.message, success: false });
     }
 };
+
+//Get all reviews with user and pet details including one image
+const getReviews = async (req, res) => {
+    try {
+        const reviews = await Review.find()
+            .populate("userId", "name")
+            .populate({
+                path: "petId",
+                select: "name species",
+                populate: {
+                    path: "images",
+                    select: "url",
+                    limit: 1
+                }
+            });
+
+        return res.status(200).json(new ApiResponse(200, "Reviews fetched", reviews));
+    } catch (error) {
+        return res.status(error.statusCode || 500).json({ message: error.message, success: false });
+    }
+};
+
 
 const getReviewsForPet = async (req, res) => {
     try {
@@ -95,4 +119,4 @@ const deleteReview = async (req, res) => {
     }
 };
 
-export {addReview,getReviewsForPet,getAverageRating,updateReview,deleteReview}
+export {addReview,getReviewsForPet,getAverageRating,updateReview,deleteReview,getReviews};

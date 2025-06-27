@@ -186,9 +186,9 @@ const OutgoingRequestsPage = () => {
         <div className="flex items-center justify-between mb-8">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-purple-700 hover:text-purple-900 transition-colors group"
+            className="flex items-center gap-2 px-4 py-2 bg-white text-purple-700 border border-purple-200 rounded-full shadow hover:bg-purple-50 hover:text-purple-900 transition-all group"
           >
-            <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft className="h-5 w-5 mr-1 group-hover:-translate-x-1 transition-transform" />
             <span className="font-medium">Back</span>
           </button>
           <h1 className="text-3xl font-bold text-purple-800">Your Adoption Requests</h1>

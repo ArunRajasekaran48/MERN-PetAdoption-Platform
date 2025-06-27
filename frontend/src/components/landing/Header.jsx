@@ -79,6 +79,7 @@ const Header = () => {
           </button>
           <button
             className="font-medium hover:text-rose-600 transition-colors bg-transparent border-none outline-none cursor-pointer"
+            onClick={() => navigate('/reviews')}
           >
             Reviews
           </button>
@@ -177,7 +178,7 @@ const Header = () => {
             </button>
             <button
               className="font-medium hover:text-rose-600 transition-colors bg-transparent border-none outline-none cursor-pointer text-left"
-              onClick={() => alert('Feature coming soon!')}
+              onClick={() => { setIsMenuOpen(false); navigate('/reviews'); }}
             >
               Reviews
             </button>

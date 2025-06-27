@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
 import { getIncomingAdoptionRequests, updateAdoptionRequestStatus } from '../services/adoptionService';
+import { ArrowLeft } from 'lucide-react';
 
 const IncomingRequestsPage = () => {
   const navigate = useNavigate();
@@ -71,11 +72,9 @@ const IncomingRequestsPage = () => {
       <div className="flex items-center justify-between mb-8">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-white text-purple-700 border border-purple-200 rounded-full shadow hover:bg-purple-50 hover:text-purple-900 transition-all group"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
+          <ArrowLeft className="h-5 w-5 mr-1 group-hover:-translate-x-1 transition-transform" />
           Back
         </button>
         <h1 className="text-3xl font-bold text-gray-800">Incoming Requests</h1>

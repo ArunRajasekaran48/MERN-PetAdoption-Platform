@@ -128,20 +128,6 @@ export const getPetReviews = async (petId) => {
   }
 };
 
-export const getPetAverageRating = async (petId) => {
-  try {
-    const response = await axios.get(`${API_URL.replace('/pets', '')}/reviews/get-average-ratingOf-pet/${petId}`, {
-      withCredentials: true
-    });
-    return {
-      success: true,
-      data: response.data.data
-    };
-  } catch (error) {
-    console.error('Error in getPetAverageRating:', error);
-    throw handleApiError(error);
-  }
-};
 
 export const updateReview = async (reviewId, reviewData) => {
   try {
@@ -172,6 +158,25 @@ export const deleteReview = async (reviewId) => {
     };
   } catch (error) {
     console.error('Error in deleteReview:', error);
+    throw handleApiError(error);
+  }
+};
+
+export const getAllReviews = async () => {
+  try {
+    const response = await axios.get('http://localhost:5000/api/v1/reviews/get-Reviews', {
+      withCredentials: true
+    });
+    if (response.data && Array.isArray(response.data.data)) {
+      return response.data.data;
+    }
+    if (response.data && Array.isArray(response.data.message)) {
+      return response.data.message;
+    }
+    console.error('Unexpected API response structure:', response.data);
+    return [];
+  } catch (error) {
+    console.error('Error in getAllReviews:', error);
     throw handleApiError(error);
   }
 };

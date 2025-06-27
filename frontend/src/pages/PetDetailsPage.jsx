@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom"
 import Slider from "react-slick"
 import "slick-carousel/slick/slick.css"
 import "slick-carousel/slick/slick-theme.css"
-import { getAllPets, getPetReviews, getPetAverageRating, updateReview, deleteReview } from "../services/petService"
+import { getAllPets, getPetReviews, updateReview, deleteReview } from "../services/petService"
 import { createAdoptionRequest, countPendingRequestsForPet } from "../services/adoptionService"
 import { useToast } from "../context/ToastContext"
 import {
@@ -41,7 +41,6 @@ const PetDetailsPage = () => {
   const [pendingReqCount, setPendingReqCount] = useState(0)
   const [proceedAdoption, setProceedAdoption] = useState(false)
   const [reviews, setReviews] = useState([])
-  const [averageRating, setAverageRating] = useState(0)
   const [editingReview, setEditingReview] = useState(null)
   const [editForm, setEditForm] = useState({ rating: 0, comment: "" })
   const [showEditModal, setShowEditModal] = useState(false)
@@ -95,12 +94,7 @@ const PetDetailsPage = () => {
     const fetchReviews = async () => {
       if (!pet?._id) return
       try {
-        const [reviewsRes, ratingRes] = await Promise.all([
-          getPetReviews(pet._id),
-          getPetAverageRating(pet._id)
-        ])
-        console.log('reviewsRes:', reviewsRes)
-        console.log('FULL reviewsRes:', reviewsRes)
+        const reviewsRes = await getPetReviews(pet._id)
         let reviewsArr = []
         if (reviewsRes.success) {
           if (Array.isArray(reviewsRes.message)) {
@@ -118,15 +112,9 @@ const PetDetailsPage = () => {
             comment: r.comment
           }))
           setReviews(extracted)
-          console.log('Setting reviews:', extracted)
         } else {
           setReviews([])
-          console.log('Setting reviews: []')
         }
-        if (ratingRes.success) {
-          setAverageRating(ratingRes.data.averageRating)
-        }
-        
       } catch (error) {
         console.error("Failed to fetch reviews:", error)
       }
@@ -302,9 +290,9 @@ const PetDetailsPage = () => {
       <div className="container mx-auto px-4 py-12">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-purple-700 hover:text-purple-900 transition-colors mb-8 group"
+          className="flex items-center gap-2 px-4 py-2 bg-white text-purple-700 border border-purple-200 rounded-full shadow hover:bg-purple-50 hover:text-purple-900 transition-all mb-8 group"
         >
-          <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform" />
+          <ArrowLeft className="h-5 w-5 mr-1 group-hover:-translate-x-1 transition-transform" />
           <span className="font-medium">Back to pets</span>
         </button>
 
@@ -466,22 +454,6 @@ const PetDetailsPage = () => {
                 <Star className="h-6 w-6 text-yellow-500 fill-current" />
                 Reviews
               </h2>
-              <div className="flex items-center gap-2">
-                <span className="text-gray-600">Average Rating:</span>
-                <div className="flex items-center">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      className={`h-5 w-5 ${
-                        star <= (averageRating || 0)
-                          ? "text-yellow-500 fill-current"
-                          : "text-gray-300"
-                      }`}
-                    />
-                  ))}
-                </div>
-                <span className="text-gray-600">({(averageRating || 0).toFixed(1)})</span>
-              </div>
             </div>
 
             {reviews.length === 0 ? (
@@ -509,13 +481,15 @@ const PetDetailsPage = () => {
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => handleEditReview(review)}
-                              className="text-gray-500 hover:text-purple-600 transition-colors"
+                              className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700"
+                              title="Edit Review"
                             >
                               <Edit2 className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => handleDeleteReview(review)}
-                              className="text-gray-500 hover:text-red-600 transition-colors"
+                              className="bg-red-600 text-white p-2 rounded-full hover:bg-red-700"
+                              title="Delete Review"
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>

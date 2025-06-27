@@ -6,7 +6,7 @@ import { uploadCloudinary,deleteFromCloudinary } from "../utils/cloudinary.js";
 const createPet = async (req, res) => {
     let imageUrls = [];
     try {
-        const { name, age, breed, species, gender, description, owner } = req.body;
+        const { name, age, breed, species, gender, description, owner, location } = req.body;
         // Validate required fields
         if (!name || !age || !breed || !species || !gender || !owner) {
             throw new ApiError(400, "Missing required pet information");
@@ -62,6 +62,7 @@ const createPet = async (req, res) => {
             description: description ? description.trim() : "",
             images: imageUrls,
             owner,
+            location: location ? location.trim() : undefined,
         });
         // Save pet to database
         await pet.save();
@@ -129,7 +130,7 @@ const getPetById = async (req, res) => {
 const updatePet = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, age, breed, species, description, gender } = req.body;
+        const { name, age, breed, species, description, gender, location } = req.body;
 
         const pet = await Pet.findById(id);
         if (!pet) throw new ApiError(404, "Pet not found");
@@ -144,6 +145,7 @@ const updatePet = async (req, res) => {
         if (species) pet.species = species.trim();
         if (description) pet.description = description.trim();
         if (gender) pet.gender = gender;
+        if (location !== undefined) pet.location = location.trim();
 
         await pet.save();
 

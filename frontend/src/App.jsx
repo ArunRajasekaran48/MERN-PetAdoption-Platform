@@ -12,6 +12,8 @@ import EditProfile from './pages/EditProfile';
 import IncomingRequestsPage from './pages/IncomingRequestsPage';
 import OutgoingRequestsPage from './pages/OutgoingRequestsPage';
 import ListPetPage from './pages/ListPetPage';
+import ReviewsPage from './pages/ReviewsPage';
+
 function App() {
   return (
     <ToastProvider>
@@ -29,6 +31,7 @@ function App() {
           <Route path="/incoming-requests" element={<IncomingRequestsPage />} />
           <Route path="/outgoing-requests" element={<OutgoingRequestsPage />} />
           <Route path="/list-pet" element={<ListPetPage />} />
+          <Route path="/reviews" element={<ReviewsPage />} />
         </Routes>
       </Router>
     </ToastProvider>

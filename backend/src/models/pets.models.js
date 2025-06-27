@@ -35,6 +35,10 @@ const petSchema = new Schema({
     owner: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-    }
+    },
+    location: {
+        type: String,
+        required: false,
+    },
 }, { timestamps: true });
 export const Pet= mongoose.model("Pet",petSchema);

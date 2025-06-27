@@ -1,7 +1,29 @@
-import React from "react"
+import React, { useEffect, useState } from "react"
 import { Star } from "lucide-react"
+import { getAllReviews } from "../../services/petService"
 
 const Testimonials = () => {
+  const [reviews, setReviews] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      setLoading(true)
+      try {
+        const data = await getAllReviews()
+        setReviews(data)
+        setError(null)
+      } catch (err) {
+        setError("Failed to load reviews.")
+        setReviews([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchReviews()
+  }, [])
+
   return (
     <section id="testimonials" className="py-20 bg-white">
       <div className="container mx-auto px-4">
@@ -11,110 +33,41 @@ const Testimonials = () => {
             Hear from pet owners and adopters who found their perfect match on PawPal
           </p>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Testimonial 1 */}
-          <div className="bg-gray-50 p-6 rounded-xl">
-            <div className="flex items-center mb-4">
-              <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
-                <img
-                  src="/src/assets/cust2-balan.jpg?height=48&width=48"
-                  alt="Balan."
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div>
-                <h4 className="font-bold">Balan RS.</h4>
-                <div className="flex text-amber-400">
-                  <Star size={16} fill="currentColor" />
-                  <Star size={16} fill="currentColor" />
-                  <Star size={16} fill="currentColor" />
-                  <Star size={16} fill="currentColor" />
-                  <Star size={16} fill="currentColor" />
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
+          </div>
+        ) : error ? (
+          <div className="text-center text-red-500 py-8">{error}</div>
+        ) : reviews.length === 0 ? (
+          <div className="text-center text-gray-500 py-8">No reviews yet.</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {reviews.slice(0, 3).map((review) => (
+              <div key={review._id} className="bg-gray-50 p-6 rounded-xl">
+                <div className="flex items-center mb-4">
+                  <div className="w-12 h-12 rounded-full overflow-hidden mr-4 bg-purple-100 flex items-center justify-center">
+                    <span className="font-bold text-purple-700 text-lg">{review.userId?.name?.[0] || "U"}</span>
+                  </div>
+                  <div>
+                    <h4 className="font-bold">{review.userId?.name || "Anonymous"}</h4>
+                    <div className="flex text-amber-400">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star key={star} size={16} fill={star <= review.rating ? "currentColor" : "none"} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <p className="text-gray-600 mb-4">"{review.comment}"</p>
+                <div className="rounded-lg overflow-hidden h-32 flex items-center justify-center bg-white">
+                  <span className="text-xs text-purple-600 font-semibold">
+                    {review.petId?.name ? `Pet: ${review.petId.name}` : ""}
+                  </span>
                 </div>
               </div>
-            </div>
-            <p className="text-gray-600 mb-4">
-              "Finding Max on PawPal was the best thing that happened to our family. The process was so smooth, and we
-              were able to message his previous owner to learn all about him before adopting."
-            </p>
-            <div className="rounded-lg overflow-hidden h-40">
-              <img
-                src="/src/assets/dog1.jpg?height=160&width=300"
-                alt="Happy dog with family"
-                className="w-48 h-48 object-cover"
-              />
-            </div>
+            ))}
           </div>
-
-          {/* Testimonial 2 */}
-          <div className="bg-gray-50 p-6 rounded-xl">
-            <div className="flex items-center mb-4">
-              <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
-                <img
-                  src="/src/assets/cust1.jpg?height=48&width=48"
-                  alt="Aravinth ."
-                  className="w-28 h-full object-cover"
-                />
-              </div>
-              <div>
-                <h4 className="font-bold">Aravinthan V.</h4>
-                <div className="flex text-amber-400">
-                  <Star size={16} fill="currentColor" />
-                  <Star size={16} fill="currentColor" />
-                  <Star size={16} fill="currentColor" />
-                  <Star size={16} fill="currentColor" />
-                  <Star size={16} fill="currentColor" />
-                </div>
-              </div>
-            </div>
-            <p className="text-gray-600 mb-4">
-              "When I needed to find a new home for my cat due to a move, PawPal made it easy to find a loving family.
-              I could vet potential adopters and stay in touch even after the adoption."
-            </p>
-            <div className="rounded-lg overflow-hidden h-40">
-              <img
-                src="/src/assets/cat11.jpg?height=160&width=300"
-                alt="Cat with new owner"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </div>
-
-          {/* Testimonial 3 */}
-          <div className="bg-gray-50 p-6 rounded-xl">
-            <div className="flex items-center mb-4">
-              <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
-                <img
-                  src="/src/assets/cust-abi.jpg?height=48&width=48"
-                  alt="Abirami ."
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div>
-                <h4 className="font-bold">Abirami T.</h4>
-                <div className="flex text-amber-400">
-                  <Star size={16} fill="currentColor" />
-                  <Star size={16} fill="currentColor" />
-                  <Star size={16} fill="currentColor" />
-                  <Star size={16} fill="currentColor" />
-                  <Star size={16} fill="currentColor" />
-                </div>
-              </div>
-            </div>
-            <p className="text-gray-600 mb-4">
-              "After months of searching, I found my perfect rabbit companion on PawPal. The messaging feature helped
-              me ask all the right questions before meeting him in person."
-            </p>
-            <div className="rounded-lg overflow-hidden h-40">
-              <img
-                src="/src/assets/rabit.jpg?height=160&width=300"
-                alt="Rabbit with owner"
-                className="w-74 h-48 object-cover rounded-lg"
-              />
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </section>
   )

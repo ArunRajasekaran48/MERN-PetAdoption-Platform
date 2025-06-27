@@ -8,7 +8,6 @@ export const createAdoptionRequest = async (petId) => {
     if (!user) {
       throw new Error('User not logged in');
     }
-
     const response = await axios.post(
       `${API_URL}/adoptionrequests/create-adoption-request`,
       { petId, userId: user._id },

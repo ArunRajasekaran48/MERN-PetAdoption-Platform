@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { getPetsByOwner, deletePet, updatePet, updatePetImages } from '../services/petService';
 import PetCard from '../components/pets/PetCard';
 import { useNavigate } from 'react-router-dom';
-import { Edit, Trash2, Image, X } from 'lucide-react';
+import { Edit, Trash2, Image, X, ArrowLeft } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
+import ConfirmationModal from '../components/common/ConfirmationModal';
 
 const MyPetsPage = () => {
   const [pets, setPets] = useState([]);
@@ -12,6 +13,8 @@ const MyPetsPage = () => {
   const [editingPet, setEditingPet] = useState(null);
   const [showImageUpload, setShowImageUpload] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [petToDelete, setPetToDelete] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const navigate = useNavigate();
   const { showToast } = useToast();
 
@@ -47,15 +50,28 @@ const MyPetsPage = () => {
     }
   };
 
-  const handleDelete = async (petId) => {
-    if (window.confirm('Are you sure you want to delete this pet?')) {
-      try {
-        await deletePet(petId);
-        setPets(pets.filter(pet => pet._id !== petId));
-      } catch (err) {
-        setError('Failed to delete pet.');
-      }
+  const handleDelete = (petId) => {
+    setPetToDelete(petId);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!petToDelete) return;
+    try {
+      await deletePet(petToDelete);
+      setPets(pets.filter(pet => pet._id !== petToDelete));
+      setShowDeleteModal(false);
+      setPetToDelete(null);
+    } catch (err) {
+      setError('Failed to delete pet.');
+      setShowDeleteModal(false);
+      setPetToDelete(null);
     }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setPetToDelete(null);
   };
 
   const handleUpdate = async (petId, updatedData) => {
@@ -132,11 +148,9 @@ const MyPetsPage = () => {
       <div className="flex items-center justify-between mb-8">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-white text-purple-700 border border-purple-200 rounded-full shadow hover:bg-purple-50 hover:text-purple-900 transition-all group"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
+          <ArrowLeft className="h-5 w-5 mr-1 group-hover:-translate-x-1 transition-transform" />
           Back
         </button>
         <h1 className="text-3xl font-bold text-gray-800">My Listed Pets</h1>
@@ -338,6 +352,16 @@ const MyPetsPage = () => {
           ))}
         </div>
       )}
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        title="Delete Pet"
+        message="Are you sure you want to delete this pet? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
     </div>
   );
 };

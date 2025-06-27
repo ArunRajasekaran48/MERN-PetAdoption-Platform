@@ -49,8 +49,19 @@ const HomePage = () => {
     }
   }
 
+  // Robustly get user from localStorage
+  let user = null
+  try {
+    const userStr = localStorage.getItem("user")
+    if (userStr) user = JSON.parse(userStr)
+  } catch (e) {
+    user = null
+  }
+
   const filteredPets = pets.filter((pet) => {
     if (!pet) return false
+    // Exclude pets listed by the current user
+    if (user && (pet.owner?._id === user._id || pet.owner === user._id)) return false;
     const matchesSearch =
       pet.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       false ||
@@ -60,14 +71,12 @@ const HomePage = () => {
     return matchesSearch && matchesSpecies
   })
 
-  // Robustly get user from localStorage
-  let user = null
-  try {
-    const userStr = localStorage.getItem("user")
-    if (userStr) user = JSON.parse(userStr)
-  } catch (e) {
-    user = null
-  }
+  // Sort pets: non-adopted first, adopted last
+  const sortedPets = [...filteredPets].sort((a, b) => {
+    if (a.adoptionStatus === 'adopted' && b.adoptionStatus !== 'adopted') return 1;
+    if (a.adoptionStatus !== 'adopted' && b.adoptionStatus === 'adopted') return -1;
+    return 0;
+  });
 
   const handleProfileClick = () => {
     setShowDropdown((prev) => !prev)
@@ -315,7 +324,7 @@ const HomePage = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredPets.map((pet) => (
+                {sortedPets.map((pet) => (
                   <div key={pet._id} className="pet-card-container">
                     <PetCard pet={pet} />
                   </div>

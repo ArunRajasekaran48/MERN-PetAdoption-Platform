@@ -167,6 +167,15 @@ const getAdoptionRequestById = async (req, res) => {
             pet.adoptionStatus = 'adopted';
             await pet.save();
             request.approvedAt = new Date();
+            // Reject all other pending requests for the same pet
+            await AdoptionRequest.updateMany(
+                {
+                    petId: request.petId,
+                    _id: { $ne: request._id },
+                    status: 'pending'
+                },
+                { $set: { status: 'rejected' } }
+            );
         }
         // If rejecting, update pet status back to available
         else if (status === 'rejected') {

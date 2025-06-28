@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
 import { getIncomingAdoptionRequests, updateAdoptionRequestStatus } from '../services/adoptionService';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Mail } from 'lucide-react';
 
 const IncomingRequestsPage = () => {
   const navigate = useNavigate();
@@ -46,6 +46,9 @@ const IncomingRequestsPage = () => {
     }
   };
 
+  // Find all petIds that have an approved request
+  const adoptedPetIds = new Set(requests.filter(r => r.status === 'approved').map(r => r.petId?._id));
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -88,7 +91,35 @@ const IncomingRequestsPage = () => {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {requests.map((request) => (
-            <div key={request._id} className="bg-white rounded-lg shadow-md p-6">
+            <div key={request._id} className="bg-white rounded-lg shadow-md p-6 relative">
+              {/* Contact User Icon at top right */}
+              <div className="absolute top-4 right-4 z-10">
+                <button
+                  onClick={() => {
+                    const phone = request.userId?.phone?.replace(/\D/g, "");
+                    const email = request.userId?.email;
+                    if (phone) {
+                      const waPhone = phone.length === 10 ? `91${phone}` : phone;
+                      window.open(`https://wa.me/${waPhone}`);
+                    } else if (email) {
+                      window.open(`mailto:${email}`);
+                    }
+                  }}
+                  disabled={!request.userId?.phone && !request.userId?.email}
+                  className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#A6786D] bg-[#8E531F] shadow-none border-none ${
+                    request.userId?.phone || request.userId?.email
+                      ? 'text-white hover:text-black hover:bg-[#CADBEB]'
+                      : 'text-gray-300 cursor-not-allowed'
+                  }`}
+                  title="Contact User"
+                >
+                  {request.userId?.phone ? (
+                    <MessageSquare size={20} />
+                  ) : (
+                    <Mail size={20} />
+                  )}
+                </button>
+              </div>
               <div className="flex items-center gap-4 mb-4">
                 <img
                   src={request.petId?.images?.[0] || '/placeholder-pet.jpg'}
@@ -117,7 +148,10 @@ const IncomingRequestsPage = () => {
                 </p>
               </div>
 
-              {request.status === 'pending' && (
+              {/* Only show Accept/Reject if no other request for this pet is approved */}
+              {request.status === 'pending' && adoptedPetIds.has(request.petId?._id) ? (
+                <div className="text-center text-gray-500 font-medium py-2 border rounded bg-gray-50">Pet already adopted</div>
+              ) : request.status === 'pending' && (
                 <div className="flex gap-3">
                   <button
                     onClick={() => handleStatusUpdate(request._id, 'approved')}

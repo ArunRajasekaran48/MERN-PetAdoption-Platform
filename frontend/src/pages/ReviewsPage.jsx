@@ -25,7 +25,7 @@ const ReviewsPage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white py-12">
+    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
       <div className="container mx-auto px-4">
         <h1 className="text-3xl font-bold mb-8 text-center text-purple-800">All Reviews</h1>
         {loading ? (

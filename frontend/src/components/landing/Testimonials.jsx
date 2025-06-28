@@ -59,7 +59,14 @@ const Testimonials = () => {
                   </div>
                 </div>
                 <p className="text-gray-600 mb-4">"{review.comment}"</p>
-                <div className="rounded-lg overflow-hidden h-32 flex items-center justify-center bg-white">
+                <div className="rounded-lg overflow-hidden h-32 flex flex-col items-center justify-center bg-white">
+                  {review.petId?.images && review.petId.images.length > 0 && (
+                    <img
+                      src={review.petId.images[0]}
+                      alt={review.petId.name}
+                      className="w-16 h-16 object-cover rounded-full mb-2 border-2 border-purple-200"
+                    />
+                  )}
                   <span className="text-xs text-purple-600 font-semibold">
                     {review.petId?.name ? `Pet: ${review.petId.name}` : ""}
                   </span>

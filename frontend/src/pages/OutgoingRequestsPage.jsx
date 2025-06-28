@@ -2,7 +2,9 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useToast } from "../context/ToastContext"
 import { getOutgoingAdoptionRequests, cancelAdoptionRequest, submitAdoptionReview } from "../services/adoptionService"
+import { getAllReviews, updateReview } from '../services/petService'
 import { ArrowLeft, Heart, Star, X, Check, MessageSquare, AlertCircle } from "lucide-react"
+import ConfirmationModal from '../components/common/ConfirmationModal'
 
 const OutgoingRequestsPage = () => {
   const navigate = useNavigate()
@@ -15,23 +17,34 @@ const OutgoingRequestsPage = () => {
     requestId: null,
     rating: 0,
     comment: "",
+    reviewId: null,
   })
   const [submittingReview, setSubmittingReview] = useState(false)
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [requestToCancel, setRequestToCancel] = useState(null)
+  const [editingReview, setEditingReview] = useState(false)
+  const [showDeleteReviewModal, setShowDeleteReviewModal] = useState(false)
+  const [requestToDeleteReview, setRequestToDeleteReview] = useState(null)
 
   const fetchOutgoingRequests = async () => {
     try {
       setLoading(true)
       const response = await getOutgoingAdoptionRequests()
+      let validRequests = []
       if (response.success) {
-        // Filter out requests with missing pet without trying to delete them
-        const validRequests = response.data.filter(req => req.petId)
-        console.log('Request object structure:', validRequests[0]) // Debug log
-        setRequests(validRequests)
+        validRequests = response.data.filter(req => req.petId)
       } else {
         setError(response.message)
       }
+      // Fetch all reviews for the current user
+      const allReviews = await getAllReviews();
+      const user = JSON.parse(localStorage.getItem('user'));
+      // Attach review to each request if exists
+      const requestsWithReviews = validRequests.map(req => {
+        const review = allReviews.find(r => r.petId?._id === req.petId._id && r.userId?._id === user?._id);
+        return { ...req, review };
+      });
+      setRequests(requestsWithReviews)
     } catch (error) {
       setError("Failed to fetch outgoing requests")
     } finally {
@@ -75,12 +88,14 @@ const OutgoingRequestsPage = () => {
     setRequestToCancel(null)
   }
 
-  const openReviewForm = (requestId) => {
+  const openReviewForm = (requestId, review = null) => {
     setReviewForm({
       requestId,
-      rating: 0,
-      comment: "",
+      rating: review ? review.rating : 0,
+      comment: review ? review.comment : "",
+      reviewId: review ? review._id : null,
     })
+    setEditingReview(!!review)
   }
 
   const closeReviewForm = () => {
@@ -88,6 +103,7 @@ const OutgoingRequestsPage = () => {
       requestId: null,
       rating: 0,
       comment: "",
+      reviewId: null,
     })
   }
 
@@ -111,7 +127,6 @@ const OutgoingRequestsPage = () => {
       showToast("Please select a rating", "error")
       return
     }
-
     setSubmittingReview(true)
     try {
       const request = requests.find(req => req._id === reviewForm.requestId)
@@ -119,17 +134,25 @@ const OutgoingRequestsPage = () => {
         showToast("Could not find pet information", "error")
         return
       }
-
-      const response = await submitAdoptionReview(reviewForm.requestId, {
-        petId: request.petId._id,
-        rating: reviewForm.rating,
-        comment: reviewForm.comment,
-      })
-
+      let response;
+      if (reviewForm.reviewId) {
+        // Edit existing review
+        response = await updateReview(reviewForm.reviewId, {
+          rating: reviewForm.rating,
+          comment: reviewForm.comment,
+        });
+      } else {
+        // Add new review
+        response = await submitAdoptionReview(reviewForm.requestId, {
+          petId: request.petId._id,
+          rating: reviewForm.rating,
+          comment: reviewForm.comment,
+        });
+      }
       if (response.success) {
-        showToast("Review submitted successfully")
+        showToast(editingReview ? "Review updated successfully" : "Review submitted successfully")
         closeReviewForm()
-        fetchOutgoingRequests() // Refresh the list to show the review
+        fetchOutgoingRequests()
       } else {
         showToast(response.message || "Failed to submit review", "error")
       }
@@ -137,8 +160,41 @@ const OutgoingRequestsPage = () => {
       showToast("An error occurred while submitting your review", "error")
     } finally {
       setSubmittingReview(false)
+      setEditingReview(false)
     }
   }
+
+  // Handler to open delete review modal
+  const handleDeleteReview = (request) => {
+    setRequestToDeleteReview(request);
+    setShowDeleteReviewModal(true);
+  };
+
+  // Handler to actually delete the review
+  const confirmDeleteReview = async () => {
+    if (!requestToDeleteReview) return;
+    try {
+      setSubmittingReview(true);
+      const response = await submitAdoptionReview(requestToDeleteReview._id, { petId: requestToDeleteReview.petId._id, delete: true, reviewId: requestToDeleteReview.review._id });
+      if (response.success) {
+        showToast("Review deleted successfully");
+        fetchOutgoingRequests();
+      } else {
+        showToast(response.message || "Failed to delete review", "error");
+      }
+    } catch (error) {
+      showToast("An error occurred while deleting your review", "error");
+    } finally {
+      setSubmittingReview(false);
+      setShowDeleteReviewModal(false);
+      setRequestToDeleteReview(null);
+    }
+  };
+
+  const cancelDeleteReview = () => {
+    setShowDeleteReviewModal(false);
+    setRequestToDeleteReview(null);
+  };
 
   if (loading) {
     return (
@@ -245,16 +301,6 @@ const OutgoingRequestsPage = () => {
                         {request.status?.charAt(0).toUpperCase() + request.status?.slice(1)}
                       </span>
                     </div>
-
-                    {/* {request.status === "approved" && !request.review && (
-                      <button
-                        onClick={() => openReviewForm(request._id)}
-                        className="text-purple-600 hover:text-purple-800 text-sm font-medium flex items-center gap-1"
-                      >
-                        <MessageSquare className="h-4 w-4" />
-                        Review
-                      </button>
-                    )} */}
                   </div>
 
                   <div className="space-y-2">
@@ -318,14 +364,31 @@ const OutgoingRequestsPage = () => {
                     </button>
                   )}
 
-                  {request.status === "approved" && !request.review && (
-                    <button
-                      onClick={() => openReviewForm(request._id)}
-                      className="w-full mt-4 bg-purple-600 text-white py-2 px-4 rounded-full hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors flex items-center justify-center gap-2"
-                    >
-                      <MessageSquare className="h-4 w-4" />
-                      <span>Leave a Review</span>
-                    </button>
+                  {request.status === "approved" && (
+                    !request.review ? (
+                      <button
+                        onClick={() => openReviewForm(request._id)}
+                        className="w-full mt-4 bg-purple-600 text-white py-2 px-4 rounded-full hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <MessageSquare className="h-4 w-4" />
+                        <span>Leave a Review</span>
+                      </button>
+                    ) : (
+                      <div className="flex gap-2 mt-4">
+                        <button
+                          onClick={() => openReviewForm(request._id, request.review)}
+                          className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-full hover:bg-blue-700 transition-colors"
+                        >
+                          Edit Review
+                        </button>
+                        <button
+                          onClick={() => handleDeleteReview(request)}
+                          className="flex-1 bg-red-600 text-white py-2 px-4 rounded-full hover:bg-red-700 transition-colors"
+                        >
+                          Delete Review
+                        </button>
+                      </div>
+                    )
                   )}
                 </div>
               </div>
@@ -338,7 +401,7 @@ const OutgoingRequestsPage = () => {
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-300">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-gray-800">Leave a Review</h3>
+                <h3 className="text-xl font-bold text-gray-800">{editingReview ? "Edit Review" : "Leave a Review"}</h3>
                 <button onClick={closeReviewForm} className="text-gray-500 hover:text-gray-700">
                   <X className="h-5 w-5" />
                 </button>
@@ -406,7 +469,7 @@ const OutgoingRequestsPage = () => {
                     ) : (
                       <>
                         <Check className="h-4 w-4" />
-                        <span>Submit Review</span>
+                        <span>{editingReview ? "Update Review" : "Submit Review"}</span>
                       </>
                     )}
                   </button>
@@ -460,6 +523,16 @@ const OutgoingRequestsPage = () => {
             </div>
           </div>
         )}
+
+        <ConfirmationModal
+          isOpen={showDeleteReviewModal}
+          onClose={cancelDeleteReview}
+          onConfirm={confirmDeleteReview}
+          title="Delete Review"
+          message="Are you sure you want to delete your review? This action cannot be undone."
+          confirmText="Delete"
+          cancelText="Cancel"
+        />
       </div>
     </div>
   )

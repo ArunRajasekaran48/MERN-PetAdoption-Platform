@@ -302,31 +302,44 @@ const PetDetailsPage = () => {
               {/* Image Slider Section */}
               <div className="md:w-1/2 relative">
                 <div className="h-full">
-                  <Slider {...sliderSettings} className="h-full">
-                    {pet.images?.map((image, idx) => (
-                      <div key={idx} className="h-[400px]">
-                        <div
-                          className="w-full h-full bg-center bg-cover"
-                          style={{ backgroundImage: `url(${image})` }}
-                        ></div>
-                      </div>
-                    ))}
-                  </Slider>
+                  {pet.images?.length === 1 ? (
+                    <div className="h-[400px] flex items-center justify-center">
+                      <img
+                        src={pet.images[0]}
+                        alt={pet.name}
+                        className="object-cover w-full h-full rounded-xl shadow"
+                        style={{ maxHeight: '400px', maxWidth: '100%' }}
+                      />
+                    </div>
+                  ) : (
+                    <Slider {...sliderSettings} className="h-full">
+                      {pet.images?.map((image, idx) => (
+                        <div key={idx} className="h-[400px]">
+                          <div
+                            className="w-full h-full bg-center bg-cover rounded-xl shadow"
+                            style={{ backgroundImage: `url(${image})` }}
+                          ></div>
+                        </div>
+                      ))}
+                    </Slider>
+                  )}
                 </div>
 
                 {/* Image Navigation Dots */}
-                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-                  {pet.images?.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setCurrentSlide(idx)}
-                      className={`w-2 h-2 rounded-full transition-all ${
-                        currentSlide === idx ? "bg-white w-6" : "bg-white/50 hover:bg-white/80"
-                      }`}
-                      aria-label={`Go to slide ${idx + 1}`}
-                    />
-                  ))}
-                </div>
+                {pet.images?.length > 1 && (
+                  <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+                    {pet.images?.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentSlide(idx)}
+                        className={`w-2 h-2 rounded-full transition-all ${
+                          currentSlide === idx ? "bg-white w-6" : "bg-white/50 hover:bg-white/80"
+                        }`}
+                        aria-label={`Go to slide ${idx + 1}`}
+                      />
+                    ))}
+                  </div>
+                )}
 
                 {/* Status Badge */}
                 <div className="absolute top-4 left-4">

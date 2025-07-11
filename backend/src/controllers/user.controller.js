@@ -23,8 +23,8 @@ const registerUser= async (req,res)=>{
     try {
         //Validations
         // 1.Empty fiels
-        const { name, email, password,phone,role } = req.body;
-        if([name,email,password,phone,role].some(
+        const { name, email, password, phone} = req.body;
+        if([name,email,password,phone].some(
             (field)=>field?.trim()===""
         )){
             throw new ApiError(400,"Please Provide All Credentials")

@@ -40,8 +40,9 @@ const RegisterForm = () => {
 
     if (!formData.phone.trim()) {
       newErrors.phone = "Phone is required"
+    }else if(formData.phone.length !== 10){
+      newErrors.phone = "Enter a valid phone number"
     }
-
     if (!formData.password) {
       newErrors.password = "Password is required"
     } else if (formData.password.length < 6) {

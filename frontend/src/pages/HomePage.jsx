@@ -18,6 +18,7 @@ const HomePage = () => {
   const navigate = useNavigate()
   const [showDropdown, setShowDropdown] = useState(false)
   const dropdownRef = useRef(null)
+  const [showOnlyAvailable, setShowOnlyAvailable] = useState(false)
 
   useEffect(() => {
     fetchPets()
@@ -68,6 +69,8 @@ const HomePage = () => {
     // Exclude pets listed by the current user
     if (user && (pet.owner?._id === user._id || pet.owner === user._id)) return false
 
+    if (showOnlyAvailable && pet.adoptionStatus === "adopted") return false
+
     const matchesSearch =
       pet.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       pet.breed?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -107,6 +110,7 @@ const HomePage = () => {
     setSelectedLocation("")
     setSelectedAge("")
     setSelectedGender("")
+    setShowOnlyAvailable(false)
   }
 
   if (loading) {
@@ -273,7 +277,6 @@ const HomePage = () => {
                   <Heart className="h-8 w-8 text-purple-600" />
                 </div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">Find Your Match</h2>
-                <p className="text-gray-600 text-sm">Discover your perfect companion</p>
               </div>
 
               <div className="space-y-6">
@@ -368,6 +371,18 @@ const HomePage = () => {
                   </div>
                 </div>
 
+                {/* Show Only Available Pets Option */}
+                <div>
+                  <label className="flex items-center gap-3 cursor-pointer select-none text-sm font-semibold text-gray-700">
+                    <input
+                      type="checkbox"
+                      className="form-checkbox h-5 w-5 text-purple-600 rounded focus:ring-purple-500 border-gray-300"
+                      checked={showOnlyAvailable}
+                      onChange={() => setShowOnlyAvailable((prev) => !prev)}
+                    />
+                    Show only available pets
+                  </label>
+                </div>
                 {/* Quick Actions */}
                 <div className="pt-6 border-t border-purple-100">
                   <div className="flex flex-col gap-3">

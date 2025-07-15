@@ -10,7 +10,7 @@ const RegisterForm = () => {
     password: "",
     confirmPassword: "",
     phone: "",
-    userType: "User",
+    role: "User",
   })
 
   const [errors, setErrors] = useState({})
@@ -52,7 +52,6 @@ const RegisterForm = () => {
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match"
     }
-
     return newErrors
   }
 
@@ -72,7 +71,7 @@ const RegisterForm = () => {
           email: formData.email,
           password: formData.password,
           phone: formData.phone,
-          userType: formData.userType,
+          role: formData.role,
         })
 
         if (response.success) {
@@ -88,7 +87,6 @@ const RegisterForm = () => {
       }
     }
   }
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f8f8f8] relative overflow-hidden">
       {/* Decorative background shapes (optional, for extra polish) */}
@@ -198,14 +196,14 @@ const RegisterForm = () => {
                 {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
               </div>
               <div>
-                <label htmlFor="userType" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="role" className="block text-sm font-medium text-gray-700">
                   User Type
                 </label>
                 <select
-                  id="userType"
-                  name="userType"
+                  id="role"
+                  name="role"
                   className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm rounded-md"
-                  value={formData.userType}
+                  value={formData.role}
                   onChange={handleChange}
                 >
                   <option value="User">User</option>

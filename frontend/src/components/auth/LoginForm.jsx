@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { loginUser } from "../../services/authService"
 import dogImage from '../../assets/dog1.jpg'
+import { AlertTriangle } from "lucide-react";
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
@@ -91,11 +92,33 @@ const LoginForm = () => {
             <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Login To Continue</h2>
           </div>
 
-          {submitError && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          {submitError && submitError.includes("suspended until") ? (
+            <div className="flex items-center bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mt-6 mb-6 rounded shadow">
+              <AlertTriangle className="w-6 h-6 mr-3 text-yellow-600" />
+              <div>
+                <div className="font-semibold">Account Suspended</div>
+                <div>{submitError.replace("Your account is ", "")}</div>
+                <div className="mt-1 text-sm">
+                  If you believe this is a mistake, please <a href="/contact-support" className="underline text-yellow-800">contact support</a>.
+                </div>
+              </div>
+            </div>
+          ) : submitError && submitError.toLowerCase().includes("banned") ? (
+            <div className="flex items-center bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mt-6 mb-6 rounded shadow">
+              <AlertTriangle className="w-6 h-6 mr-3 text-red-600" />
+              <div>
+                <div className="font-semibold">Account Banned</div>
+                
+                <div className="mt-1 text-sm">
+                  If you believe this is a mistake, please <a href="/contact-support" className="underline text-red-800">contact support</a>.
+                </div>
+              </div>
+            </div>
+          ) : submitError ? (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-6 mb-6" role="alert">
               <span className="block sm:inline">{submitError}</span>
             </div>
-          )}
+          ) : null}
 
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             <div className="rounded-md shadow-sm space-y-4">

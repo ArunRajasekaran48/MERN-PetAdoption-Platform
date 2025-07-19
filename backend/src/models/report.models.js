@@ -1,33 +1,24 @@
 import mongoose, { Schema } from "mongoose";
 
-const ReportSchema = new Schema({
-  reporterId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  reportedUserId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-  },
-  reviewId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Review",
-  },
-  reason: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  status: {
-    type: String,
-    enum: ["pending","action_taken","declined"],
-    default: "pending",
-},
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
+const reportSchema = new Schema({
+  reportedUser: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  reportedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  pet: { type: Schema.Types.ObjectId, ref: "Pet", required: true },
+  reason: { type: String, required: true },
+  status: { type: String, enum: ["pending", "resolved", "dismissed"], default: "pending" },
+  createdAt: { type: Date, default: Date.now },
 });
 
-export const Report = mongoose.model("Report", ReportSchema);
+export const Report = mongoose.model("Report", reportSchema);
+
+// Review Report Model
+
+const reviewReportSchema = new Schema({
+  review: { type: Schema.Types.ObjectId, ref: "Review", required: true },
+  reportedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  reason: { type: String, required: true },
+  status: { type: String, enum: ["pending", "resolved", "dismissed"], default: "pending" },
+  createdAt: { type: Date, default: Date.now },
+});
+
+export const ReviewReport = mongoose.model("ReviewReport", reviewReportSchema); 

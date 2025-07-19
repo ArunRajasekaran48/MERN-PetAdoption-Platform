@@ -2,7 +2,7 @@ import { ApiError } from "../utils/ApiError.js";
 
 const verifyAdmin = async (req, res, next) => {
     try {
-        if (req.user.role !== 'admin') {
+        if (req.user.role !== 'Admin') {
             throw new ApiError(403, "Access denied. Admin privileges required.");
         }
         next();

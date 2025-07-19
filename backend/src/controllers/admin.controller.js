@@ -2,31 +2,26 @@ import { User } from "../models/user.models.js";
 import { Pet } from "../models/pets.models.js";
 import { Review } from "../models/reviews.models.js";
 import { AdoptionRequest } from "../models/adoptionrequests.models.js";
-import { Report } from "../models/report.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
 // Dashboard Stats Overview
 const getDashboardStats = async (req, res) => {
     try {
-        const totalUsers = await User.countDocuments({ role: 'adopter' });
+        const totalUsers = await User.countDocuments({ role: 'User' });
         const totalPets = await Pet.countDocuments();
-        const totalAdoptionRequests = await AdoptionRequest.countDocuments();
+        const totalApprovedAdoptionRequests = await AdoptionRequest.countDocuments({status:"approved"});
+        const totalRejectedAdoptionRequests = await AdoptionRequest.countDocuments({status:"rejected"});
+        const totalPendingAdoptionRequests = await AdoptionRequest.countDocuments({status:"pending"});
         const totalReviews = await Review.countDocuments();
-        const recentAdoptionRequests = await AdoptionRequest.find()
-            .sort({ requestedAt: -1 })
-            .limit(5)
-            .populate('userId', 'name email')
-            .populate('petId', 'name species');
-
         const stats = {
             totalUsers,
             totalPets,
-            totalAdoptionRequests,
+            totalApprovedAdoptionRequests,
+            totalRejectedAdoptionRequests,
+            totalPendingAdoptionRequests,
             totalReviews,
-            recentAdoptionRequests
         };
-
         return res.status(200).json(new ApiResponse(200, stats, "Dashboard stats retrieved successfully"));
     } catch (error) {
         return res.status(error.statusCode || 500).json({
@@ -42,7 +37,7 @@ const getDashboardStats = async (req, res) => {
 // User Management
 const getAllUsers = async (req, res) => {
     try {
-        const users = await User.find({ role: 'adopter' })
+        const users = await User.find({ role: 'User' })
             .select('-password -resetPasswordToken -resetPasswordExpires')
             .sort({ createdAt: -1 });
 
@@ -58,23 +53,86 @@ const getAllUsers = async (req, res) => {
     }
 };
 
-const toggleUserBlock = async (req, res) => {
+const deleteUser = async(req,res)=>{
     try {
         const { userId } = req.params;
         const user = await User.findById(userId);
-
-        if (!user) {
-            throw new ApiError(404, "User not found");
+        if(!user){
+            throw new ApiError(404,"User not found");
         }
+        await User.findByIdAndDelete(userId);
+        return res.status(200).json(new ApiResponse(200, null, "User deleted successfully"));
+    } catch (error) {
+        return res.status(error.statusCode || 500).json({
+            statusCode: error.statusCode || 500,
+            message: error.message || "Internal Server Error",
+            data: null,
+            success: false,
+            errors: error.errors || []
+        });
+    }
+};
 
-        if (user.role === 'admin') {
-            throw new ApiError(403, "Cannot block an admin user");
-        }
-
-        user.isBlocked = !user.isBlocked;
+// Suspend a user for a number of days
+const suspendUser = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { days } = req.body;
+        const user = await User.findById(userId);
+        if (!user) throw new ApiError(404, "User not found");
+        if (user.role === 'Admin') throw new ApiError(403, "Cannot suspend an admin user");
+        if (!days || isNaN(days) || days < 1) throw new ApiError(400, "Invalid suspension days");
+        user.suspendedUntil = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+        user.isBanned = false;
+        user.banReason = null;
         await user.save();
+        return res.status(200).json(new ApiResponse(200, user, `User suspended for ${days} days`));
+    } catch (error) {
+        return res.status(error.statusCode || 500).json({
+            statusCode: error.statusCode || 500,
+            message: error.message || "Internal Server Error",
+            data: null,
+            success: false,
+            errors: error.errors || []
+        });
+    }
+};
 
-        return res.status(200).json(new ApiResponse(200, user, `User ${user.isBlocked ? 'blocked' : 'unblocked'} successfully`));
+// Ban a user permanently
+const banUser = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { reason } = req.body;
+        const user = await User.findById(userId);
+        if (!user) throw new ApiError(404, "User not found");
+        if (user.role === 'Admin') throw new ApiError(403, "Cannot ban an admin user");
+        user.isBanned = true;
+        user.banReason = reason || null;
+        user.suspendedUntil = null;
+        await user.save();
+        return res.status(200).json(new ApiResponse(200, user, "User banned permanently"));
+    } catch (error) {
+        return res.status(error.statusCode || 500).json({
+            statusCode: error.statusCode || 500,
+            message: error.message || "Internal Server Error",
+            data: null,
+            success: false,
+            errors: error.errors || []
+        });
+    }
+};
+
+// Unban or unsuspend a user
+const unbanUser = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const user = await User.findById(userId);
+        if (!user) throw new ApiError(404, "User not found");
+        user.isBanned = false;
+        user.banReason = null;
+        user.suspendedUntil = null;
+        await user.save();
+        return res.status(200).json(new ApiResponse(200, user, "User unbanned/unsuspended successfully"));
     } catch (error) {
         return res.status(error.statusCode || 500).json({
             statusCode: error.statusCode || 500,
@@ -114,6 +172,13 @@ const removePetListing = async (req, res) => {
             throw new ApiError(404, "Pet listing not found");
         }
 
+        // Delete related adoption requests
+        await AdoptionRequest.deleteMany({ petId });
+
+        // Delete related reviews
+        await Review.deleteMany({ petId });
+
+        // Now delete the pet
         await Pet.findByIdAndDelete(petId);
 
         return res.status(200).json(new ApiResponse(200, null, "Pet listing removed successfully"));
@@ -171,58 +236,6 @@ const deleteReview = async (req, res) => {
     }
 };
 
-// Report Management
-const getAllReports = async (req, res) => {
-    try {
-        const reports = await Report.find()
-            .populate("reporterId", "name email")
-            .populate("reportedUserId", "name email")
-            .populate("reviewId")
-            .sort({ createdAt: -1 });
 
-        return res.status(200).json(new ApiResponse(200, reports, "All reports fetched successfully"));
-    } catch (error) {
-        return res.status(error.statusCode || 500).json({
-            statusCode: error.statusCode || 500,
-            message: error.message || "Internal Server Error",
-            data: null,
-            success: false,
-            errors: error.errors || []
-        });
-    }
-};
-
-const updateReportStatus = async (req, res) => {
-    try {
-        const { reportId } = req.params;
-        const { status } = req.body;
-
-        if (!['pending', 'action_taken', 'declined'].includes(status)) {
-            throw new ApiError(400, "Invalid status. Must be one of: pending, action_taken, declined");
-        }
-
-        const updatedReport = await Report.findByIdAndUpdate(
-            reportId,
-            { status },
-            { new: true }
-        ).populate("reporterId", "name email")
-         .populate("reportedUserId", "name email")
-         .populate("reviewId");
-
-        if (!updatedReport) {
-            throw new ApiError(404, "Report not found");
-        }
-
-        return res.status(200).json(new ApiResponse(200, updatedReport, "Report status updated successfully"));
-    } catch (error) {
-        return res.status(error.statusCode || 500).json({
-            statusCode: error.statusCode || 500,
-            message: error.message || "Internal Server Error",
-            data: null,
-            success: false,
-            errors: error.errors || []
-        });
-    }
-};
-
-export {getDashboardStats,getAllUsers,toggleUserBlock,getAllPetListings,removePetListing,getAllReviews,deleteReview,getAllReports,updateReportStatus};
+export {getDashboardStats,getAllUsers,getAllPetListings,removePetListing,getAllReviews,deleteReview,deleteUser,
+    suspendUser, banUser, unbanUser};

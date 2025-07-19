@@ -70,6 +70,12 @@ const loginUser= async (req,res)=>{
         })
 
         if(!user)throw new ApiError(400,"User Not Found!")
+        if (user.isBanned) {
+            throw new ApiError(403, "Your account has been banned. Please contact support.");
+        }
+        if (user.suspendedUntil && user.suspendedUntil > new Date()) {
+            throw new ApiError(403, `Your account is suspended until ${user.suspendedUntil.toLocaleString()}`);
+        }
         const isPasswordValid=await user.isPasswordCorrect(password)
         if(!isPasswordValid)throw new ApiError(500,"Invalid Credentials!")
 

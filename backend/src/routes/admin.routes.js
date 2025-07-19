@@ -4,13 +4,14 @@ import { verifyAdmin } from "../middleware/admin.middleware.js";
 import {
     getDashboardStats,
     getAllUsers,
-    toggleUserBlock,
     getAllPetListings,
     removePetListing,
     getAllReviews,
     deleteReview,
-    getAllReports,
-    updateReportStatus} from "../controllers/admin.controller.js";
+    suspendUser,
+    banUser,
+    unbanUser,
+} from "../controllers/admin.controller.js";
 
 const router = Router();
 
@@ -22,7 +23,9 @@ router.get("/dashboard",verifyJWT, verifyAdmin,getDashboardStats);
 
 // User Management
 router.get("/users", getAllUsers);
-router.put("/users/:userId/block", toggleUserBlock);
+router.post("/users/:userId/suspend", suspendUser);
+router.post("/users/:userId/ban", banUser);
+router.post("/users/:userId/unban", unbanUser);
 
 // Pet Listing Management
 router.get("/pets", getAllPetListings);
@@ -32,8 +35,6 @@ router.delete("/pets/:petId", removePetListing);
 router.get("/reviews", getAllReviews);
 router.delete("/reviews/:reviewId", deleteReview);
 
-// Report Management
-router.get("/reports", getAllReports);
-router.patch("/reports/:reportId/status", updateReportStatus);
+
 
 export default router; 

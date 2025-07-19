@@ -1,8 +1,17 @@
 import { Router } from "express";
-import { reportUser,reportReview } from "../controllers/report.controller.js";
 import { verifyJWT } from "../middleware/auth.middleware.js";
+import { verifyAdmin } from "../middleware/admin.middleware.js";
+import { createReport, getAllReports, updateReportStatus } from "../controllers/report.controller.js";
 
-const router=Router();
-router.post("/report-user",verifyJWT,reportUser)
-router.post("/report-review",verifyJWT,reportReview)
-export default router;
+const router = Router();
+
+// User: create a report
+router.post("/reports", verifyJWT, createReport);
+
+// Admin: get all reports
+router.get("/admin/reports", verifyJWT, verifyAdmin, getAllReports);
+
+// Admin: update report status
+router.put("/admin/reports/:id", verifyJWT, verifyAdmin, updateReportStatus);
+
+export default router; 

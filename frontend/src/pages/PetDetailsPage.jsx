@@ -23,7 +23,10 @@ import {
   Edit2,
   Trash2,
   X,
+  MoreVertical,
 } from "lucide-react"
+import { createReport } from "../services/adminService"
+import { createReviewReport } from "../services/adminService"
 
 const PetDetailsPage = () => {
   const { id } = useParams()
@@ -47,6 +50,14 @@ const PetDetailsPage = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [reviewToDelete, setReviewToDelete] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showReportMenu, setShowReportMenu] = useState(false)
+  const [showReportModal, setShowReportModal] = useState(false)
+  const [reportReason, setReportReason] = useState("")
+  const [reportLoading, setReportLoading] = useState(false)
+  const [showReviewReportModal, setShowReviewReportModal] = useState(false)
+  const [reviewToReport, setReviewToReport] = useState(null)
+  const [reviewReportReason, setReviewReportReason] = useState("")
+  const [reviewReportLoading, setReviewReportLoading] = useState(false)
 
   useEffect(() => {
     const fetchPet = async () => {
@@ -226,6 +237,56 @@ const PetDetailsPage = () => {
     }
   }
 
+  const handleReportUser = () => {
+    setShowReportMenu(false)
+    setShowReportModal(true)
+  }
+
+  const submitReport = async () => {
+    if (!reportReason.trim()) return
+    setReportLoading(true)
+    try {
+      const user = JSON.parse(localStorage.getItem("user"))
+      await createReport({
+        reportedUser: pet.owner._id || pet.owner,
+        pet: pet._id,
+        reason: reportReason.trim(),
+      })
+      showToast && showToast("Report submitted to admin", "success")
+      setShowReportModal(false)
+      setReportReason("")
+    } catch (e) {
+      showToast && showToast("Failed to submit report", "error")
+    } finally {
+      setReportLoading(false)
+    }
+  }
+
+  const handleReportReview = (review) => {
+    setReviewToReport(review)
+    setReviewReportReason("")
+    setShowReviewReportModal(true)
+  }
+
+  const submitReviewReport = async () => {
+    if (!reviewReportReason.trim() || !reviewToReport) return
+    setReviewReportLoading(true)
+    try {
+      await createReviewReport({
+        review: reviewToReport._id,
+        reason: reviewReportReason.trim(),
+      })
+      showToast && showToast("Review report submitted to admin", "success")
+      setShowReviewReportModal(false)
+      setReviewToReport(null)
+      setReviewReportReason("")
+    } catch (e) {
+      showToast && showToast("Failed to submit review report", "error")
+    } finally {
+      setReviewReportLoading(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
@@ -352,7 +413,17 @@ const PetDetailsPage = () => {
               </div>
 
               {/* Pet Details Section */}
-              <div className="md:w-1/2 p-8">
+              <div className="md:w-1/2 p-8 relative">
+                {/* Direct report icon for user */}
+                {!isOwner && (
+                  <button
+                    className="absolute top-0 right-0 z-10 p-2 rounded-full hover:bg-yellow-100 focus:outline-none"
+                    onClick={handleReportUser}
+                    title="Report User"
+                  >
+                    <AlertCircle className="h-6 w-6 text-yellow-600" />
+                  </button>
+                )}
                 <div className="flex items-center gap-3 mb-2">
                   <Heart className="text-red-500 h-6 w-6 fill-current" />
                   <h1 className="text-3xl font-bold text-gray-800">Meet {pet.name}</h1>
@@ -490,24 +561,35 @@ const PetDetailsPage = () => {
                             ))}
                           </div>
                         </div>
-                        {isUserReview && (
-                          <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2">
+                          {isUserReview && (
+                            <>
+                              <button
+                                onClick={() => handleEditReview(review)}
+                                className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700"
+                                title="Edit Review"
+                              >
+                                <Edit2 className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteReview(review)}
+                                className="bg-red-600 text-white p-2 rounded-full hover:bg-red-700"
+                                title="Delete Review"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </>
+                          )}
+                          {!isUserReview && (
                             <button
-                              onClick={() => handleEditReview(review)}
-                              className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700"
-                              title="Edit Review"
+                              onClick={() => handleReportReview(review)}
+                              className="bg-yellow-100 text-yellow-700 p-2 rounded-full hover:bg-yellow-200"
+                              title="Report Review"
                             >
-                              <Edit2 className="h-4 w-4" />
+                              <AlertCircle className="h-4 w-4" />
                             </button>
-                            <button
-                              onClick={() => handleDeleteReview(review)}
-                              className="bg-red-600 text-white p-2 rounded-full hover:bg-red-700"
-                              title="Delete Review"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
                       <p className="text-gray-600">{review.comment}</p>
                     </div>
@@ -654,6 +736,100 @@ const PetDetailsPage = () => {
                   <>
                     <Trash2 className="h-4 w-4" />
                     <span>Delete Review</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showReportModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-300">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-yellow-100 p-2 rounded-full">
+                <AlertCircle className="h-6 w-6 text-yellow-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-800">Report User</h3>
+            </div>
+            <p className="text-gray-700 mb-4">Please provide a reason for reporting this user (owner of the pet):</p>
+            <textarea
+              value={reportReason}
+              onChange={e => setReportReason(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent min-h-[80px]"
+              placeholder="Enter reason..."
+              required
+            />
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => { setShowReportModal(false); setReportReason("") }}
+                className="flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded-full hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                disabled={reportLoading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitReport}
+                disabled={reportLoading || !reportReason.trim()}
+                className="flex-1 bg-yellow-600 text-white py-2 px-4 rounded-full hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+              >
+                {reportLoading ? (
+                  <>
+                    <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Reporting...</span>
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle className="h-4 w-4" />
+                    <span>Submit Report</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showReviewReportModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-300">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-yellow-100 p-2 rounded-full">
+                <AlertCircle className="h-6 w-6 text-yellow-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-800">Report Review</h3>
+            </div>
+            <p className="text-gray-700 mb-4">Please provide a reason for reporting this review:</p>
+            <textarea
+              value={reviewReportReason}
+              onChange={e => setReviewReportReason(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent min-h-[80px]"
+              placeholder="Enter reason..."
+              required
+            />
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => { setShowReviewReportModal(false); setReviewToReport(null); setReviewReportReason("") }}
+                className="flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded-full hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                disabled={reviewReportLoading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitReviewReport}
+                disabled={reviewReportLoading || !reviewReportReason.trim()}
+                className="flex-1 bg-yellow-600 text-white py-2 px-4 rounded-full hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+              >
+                {reviewReportLoading ? (
+                  <>
+                    <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Reporting...</span>
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle className="h-4 w-4" />
+                    <span>Submit Report</span>
                   </>
                 )}
               </button>

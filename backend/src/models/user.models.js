@@ -30,9 +30,17 @@ const userSchema = new Schema({
       required: true,
       trim: true,
   },
-  isBlocked: {
+  isBanned: {
       type: Boolean,
       default: false,
+  },
+  banReason: {
+      type: String,
+      default: null,
+  },
+  suspendedUntil: {
+      type: Date,
+      default: null,
   },
   resetPasswordToken: { 
     type: String 

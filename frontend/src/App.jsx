@@ -13,7 +13,7 @@ import IncomingRequestsPage from './pages/IncomingRequestsPage';
 import OutgoingRequestsPage from './pages/OutgoingRequestsPage';
 import ListPetPage from './pages/ListPetPage';
 import ReviewsPage from './pages/ReviewsPage';
-
+import AdminDashboard from './pages/AdminDashboard';
 function App() {
   return (
     <ToastProvider>
@@ -32,6 +32,7 @@ function App() {
           <Route path="/outgoing-requests" element={<OutgoingRequestsPage />} />
           <Route path="/list-pet" element={<ListPetPage />} />
           <Route path="/reviews" element={<ReviewsPage />} />
+          <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
       </Router>
     </ToastProvider>

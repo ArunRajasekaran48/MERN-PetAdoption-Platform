@@ -12,6 +12,12 @@ const verifyJWT = async (req, res, next) => {
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
         const user = await User.findById(decodedToken?._id).select("-password");
         if (!user) throw new ApiError(401, "Unauthorized!");
+        if (user.isBanned) {
+            throw new ApiError(403, "Your account has been banned. Please contact support.");
+        }
+        if (user.suspendedUntil && user.suspendedUntil > new Date()) {
+            throw new ApiError(403, `Your account is suspended until ${user.suspendedUntil.toLocaleString()}`);
+        }
         req.user = user;
         next();
     } catch (error) {

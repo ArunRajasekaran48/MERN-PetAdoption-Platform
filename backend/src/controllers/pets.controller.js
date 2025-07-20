@@ -11,7 +11,6 @@ const createPet = async (req, res) => {
         if (!name || !age || !breed || !species || !gender || !owner) {
             throw new ApiError(400, "Missing required pet information");
         }
-
         // Validate age
         if (isNaN(age) || age < 0 || age > 30) {
             throw new ApiError(400, "Invalid age. Age must be a number between 0 and 30");

@@ -1,12 +1,33 @@
 "use client"
-
 import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
-import { Search, Heart, ChevronDown, LogOut, User, MapPin, Calendar, Palette, Star, Mail, Repeat } from "lucide-react"
+import {
+  Search,
+  Heart,
+  ChevronDown,
+  LogOut,
+  User,
+  MapPin,
+  Calendar,
+  Palette,
+  Mail,
+  Repeat,
+  PlusCircle,
+} from "lucide-react"
 import { getAllPets } from "../services/petService"
 import PetCard from "../components/pets/PetCard"
+import { getIncomingAdoptionRequests } from "../services/adoptionService"
 
 const HomePage = () => {
+  // Robustly get user from localStorage
+  let user = null
+  try {
+    const userStr = localStorage.getItem("user")
+    if (userStr) user = JSON.parse(userStr)
+  } catch (e) {
+    user = null
+  }
+
   const [pets, setPets] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -19,10 +40,38 @@ const HomePage = () => {
   const [showDropdown, setShowDropdown] = useState(false)
   const dropdownRef = useRef(null)
   const [showOnlyAvailable, setShowOnlyAvailable] = useState(false)
+  const [hasUnseenIncomingRequests, setHasUnseenIncomingRequests] = useState(false)
+  const [pendingIncomingCount, setPendingIncomingCount] = useState(0)
 
   useEffect(() => {
     fetchPets()
   }, [])
+
+  useEffect(() => {
+    // Only fetch if user is logged in
+    if (!user) return
+    // Get count from localStorage on mount
+    const storedCount = Number.parseInt(localStorage.getItem("pendingIncomingCount"), 10) || 0
+    setPendingIncomingCount(storedCount)
+
+    const fetchIncoming = async () => {
+      const response = await getIncomingAdoptionRequests()
+      if (response.success && Array.isArray(response.data)) {
+        const pendingCount = response.data.filter((r) => r.status === "pending").length
+        setPendingIncomingCount(pendingCount)
+        localStorage.setItem("pendingIncomingCount", pendingCount)
+      }
+    }
+
+    fetchIncoming()
+  }, [user])
+
+  // Handler for navigating to incoming requests
+  const handleIncomingRequestsClick = () => {
+    setPendingIncomingCount(0)
+    localStorage.setItem("pendingIncomingCount", 0)
+    navigate("/incoming-requests")
+  }
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -30,11 +79,13 @@ const HomePage = () => {
         setShowDropdown(false)
       }
     }
+
     if (showDropdown) {
       document.addEventListener("mousedown", handleClickOutside)
     } else {
       document.removeEventListener("mousedown", handleClickOutside)
     }
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside)
     }
@@ -55,26 +106,15 @@ const HomePage = () => {
     }
   }
 
-  // Robustly get user from localStorage
-  let user = null
-  try {
-    const userStr = localStorage.getItem("user")
-    if (userStr) user = JSON.parse(userStr)
-  } catch (e) {
-    user = null
-  }
-
   const filteredPets = pets.filter((pet) => {
     if (!pet) return false
     // Exclude pets listed by the current user
     if (user && (pet.owner?._id === user._id || pet.owner === user._id)) return false
-
     if (showOnlyAvailable && pet.adoptionStatus === "adopted") return false
 
     const matchesSearch =
       pet.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       pet.breed?.toLowerCase().includes(searchTerm.toLowerCase())
-
     const matchesSpecies = !selectedSpecies || pet.species?.toLowerCase() === selectedSpecies.toLowerCase()
     const matchesLocation = !selectedLocation || pet.location?.toLowerCase().includes(selectedLocation.toLowerCase())
     const matchesAge =
@@ -201,6 +241,7 @@ const HomePage = () => {
                   <span className="hidden sm:inline">{user?.name || "Profile"}</span>
                   <ChevronDown className="w-4 h-4" />
                 </button>
+
                 {showDropdown && (
                   <div className="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-2xl py-2 z-50 border border-purple-100 overflow-hidden">
                     <div className="px-4 py-3 border-b border-purple-100 bg-gradient-to-r from-purple-50 to-pink-50">
@@ -247,19 +288,43 @@ const HomePage = () => {
                 <Heart className="w-4 h-4" />
                 <span>My Pets</span>
               </button>
+
               <button
-                className="flex items-center gap-2 px-6 py-3 text-purple-700 hover:bg-purple-50 hover:text-purple-800 transition-all duration-200 font-medium border-b-2 border-transparent hover:border-purple-300"
-                onClick={() => navigate("/incoming-requests")}
+                className="flex items-center gap-2 px-6 py-3 text-purple-700 hover:bg-purple-50 hover:text-purple-800 transition-all duration-200 font-medium border-b-2 border-transparent hover:border-purple-300 relative"
+                onClick={handleIncomingRequestsClick}
               >
                 <Mail className="w-4 h-4" />
                 <span>Incoming Requests</span>
+                {pendingIncomingCount > 0 && (
+                  <div className="absolute -top-1 -right-1 flex items-center justify-center">
+                    <div className="relative">
+                      {/* Main badge - static with subtle glow */}
+                      <div className="min-w-[1.25rem] h-5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center shadow-lg border-2 border-white transform hover:scale-105 transition-all duration-300">
+                        <span className="text-white text-xs font-bold px-1">
+                          {pendingIncomingCount > 99 ? "99+" : pendingIncomingCount}
+                        </span>
+                      </div>
+                      {/* Very subtle static glow - no animation */}
+                      <div className="absolute inset-0 min-w-[1.25rem] h-5 bg-gradient-to-r from-orange-400 to-red-400 rounded-full opacity-20 blur-sm -z-10"></div>
+                    </div>
+                  </div>
+                )}
               </button>
+
               <button
                 className="flex items-center gap-2 px-6 py-3 text-purple-700 hover:bg-purple-50 hover:text-purple-800 transition-all duration-200 font-medium border-b-2 border-transparent hover:border-purple-300"
                 onClick={() => navigate("/outgoing-requests")}
               >
                 <Repeat className="w-4 h-4" />
                 <span>Outgoing Requests</span>
+              </button>
+
+              <button
+                className="flex items-center gap-2 px-6 py-3 text-purple-700 hover:bg-purple-50 hover:text-purple-800 transition-all duration-200 font-medium border-b-2 border-transparent hover:border-purple-300"
+                onClick={() => navigate("/list-pet")}
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>List Pet</span>
               </button>
             </div>
           </div>
@@ -383,10 +448,10 @@ const HomePage = () => {
                     Show only available pets
                   </label>
                 </div>
+
                 {/* Quick Actions */}
                 <div className="pt-6 border-t border-purple-100">
                   <div className="flex flex-col gap-3">
-                    
                     <button
                       className="w-full px-6 py-3 bg-white border-2 border-purple-200 text-purple-700 rounded-xl font-semibold hover:bg-purple-50 hover:border-purple-300 transition-all duration-300"
                       onClick={clearAllFilters}
@@ -423,10 +488,11 @@ const HomePage = () => {
                   <div>
                     <h3 className="text-2xl font-bold text-gray-800">Available Companions</h3>
                     <p className="text-gray-600">
-                      {filteredPets.filter(pet => pet.adoptionStatus !== "adopted").length} {filteredPets.filter(pet => pet.adoptionStatus !== "adopted").length === 1 ? "pet" : "pets"} waiting for their forever home
+                      {filteredPets.filter((pet) => pet.adoptionStatus !== "adopted").length}{" "}
+                      {filteredPets.filter((pet) => pet.adoptionStatus !== "adopted").length === 1 ? "pet" : "pets"}{" "}
+                      waiting for their forever home
                     </p>
                   </div>
-                  
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
                   {sortedPets.map((pet) => (

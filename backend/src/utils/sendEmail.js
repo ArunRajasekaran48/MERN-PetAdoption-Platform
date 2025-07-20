@@ -24,5 +24,4 @@ const sendEmail=async (to,subject,text,html)=>{
         throw new ApiError(400,'Failed to send email')
     }
 }
-
 export {sendEmail}

@@ -59,9 +59,14 @@ const LoginForm = () => {
           // Store token and user data
           localStorage.setItem("token", response.data.data.token)
           localStorage.setItem("user", JSON.stringify(response.data.data))
-          // Redirect to the intended destination or home page
-          const from = location.state?.from || "/home"
-          navigate(from)
+          // Redirect based on role
+          const user = response.data.data;
+          if (user.role === 'Admin') {
+            navigate('/admin');
+          } else {
+            const from = location.state?.from || "/home";
+            navigate(from);
+          }
         } else {
           setSubmitError(response.message || "Invalid email or password. Please try again.")
         }

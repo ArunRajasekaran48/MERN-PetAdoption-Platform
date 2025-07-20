@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react"
-import { Menu, X } from "lucide-react"
+import { Menu, X,Settings,LogOut } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 import { getCurrentUser, logoutUser } from "../../services/authService"
 
@@ -83,6 +83,14 @@ const Header = () => {
           >
             Reviews
           </button>
+          {isLoggedIn && user?.role === 'Admin' && (
+            <button
+             className="flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-full font-medium transition-colors"
+              onClick={() => navigate('/admin')}
+            >
+              Admin Dashboard
+            </button>
+          )}
           {isLoggedIn ? (
             <div className="relative" ref={dropdownRef}>
               <button
@@ -98,34 +106,26 @@ const Header = () => {
               {showDropdown && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
                   <Link
-                    to="/my-pets"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setShowDropdown(false)}
-                  >
-                    My Pets
-                  </Link>
-                  <Link
-                    to="/incoming-requests"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setShowDropdown(false)}
-                  >
-                    Incoming Requests
-                  </Link>
-                  <Link
                     to="/edit-profile"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-rose-50 hover:to-orange-50 transition-all duration-200 font-medium text-base group"
                     onClick={() => setShowDropdown(false)}
                   >
-                    Edit Profile
+                    <div className="w-8 h-8 bg-gray-100 group-hover:bg-rose-100 rounded-lg flex items-center justify-center transition-colors duration-200">
+                      <Settings size={14} className="text-gray-600 group-hover:text-rose-600" />
+                    </div>
+                    <span className="group-hover:text-rose-400">Edit Profile</span>
                   </Link>
                   <button
                     onClick={() => {
-                      handleLogout();
-                      setShowDropdown(false);
+                      handleLogout()
+                      setShowDropdown(false)
                     }}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="flex items-center gap-3 w-full px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-red-50 hover:to-rose-50 transition-all duration-200 font-medium text-base group"
                   >
-                    Logout
+                    <div className="w-8 h-8 bg-gray-100 group-hover:bg-red-100 rounded-lg flex items-center justify-center transition-colors duration-200">
+                      <LogOut size={16} className="text-gray-600 group-hover:text-red-600" />
+                    </div>
+                    <span className="group-hover:text-red-700">Logout</span>
                   </button>
                 </div>
               )}
@@ -182,6 +182,14 @@ const Header = () => {
             >
               Reviews
             </button>
+            {isLoggedIn && user?.role === 'Admin' && (
+              <button
+                className="font-medium hover:text-blue-700 text-blue-600 border border-blue-200 bg-blue-50 px-4 py-2 rounded-full transition-colors text-left"
+                onClick={() => { setIsMenuOpen(false); navigate('/admin'); }}
+              >
+                Admin Dashboard
+              </button>
+            )}
             {isLoggedIn ? (
               <>
                 <Link to="/my-pets" className="font-medium hover:text-rose-600 transition-colors">

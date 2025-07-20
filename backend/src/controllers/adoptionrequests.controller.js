@@ -78,7 +78,7 @@ const createAdoptionRequest = async (req, res) => {
 
 const getAllAdoptionRequests = async (req, res) => {
     try {
-        const { status, userId, petId, page = 1, limit = 10 } = req.query;
+        const { status, userId, petId } = req.query;
         const filter = {};
 
         if (status) filter.status = status;
@@ -89,8 +89,6 @@ const getAllAdoptionRequests = async (req, res) => {
         const requests = await AdoptionRequest.find(filter)
             .populate('userId', 'name email phone')
             .populate('petId', 'name species breed')
-            .skip((page - 1) * limit)
-            .limit(parseInt(limit));
 
         return res.status(200).json(new ApiResponse(200, { requests, totalCount }, "Adoption requests fetched successfully"));
     } catch (error) {

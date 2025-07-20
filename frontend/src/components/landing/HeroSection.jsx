@@ -1,7 +1,18 @@
 import React from "react"
 import { Heart, ArrowRight } from "lucide-react"
+import { useNavigate } from "react-router-dom";
+
 
 const HeroSection = () => {
+  const navigate = useNavigate();
+  const handleFindCompanion = () => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      navigate("/home");
+    } else {
+      navigate("/login");
+    }
+  };
   return (
     <section className="relative bg-gradient-to-r from-blue-100 to-orange-100 py-20 md:py-32">
       <div className="container mx-auto px-4 flex flex-col md:flex-row items-center">
@@ -13,7 +24,10 @@ const HeroSection = () => {
             PawPal helps you find your perfect companion or find a loving home for a pet in need. Join our community
             of pet lovers today.
           </p>
-          <button className="bg-rose-600 hover:bg-rose-700 text-white px-8 py-3 rounded-full font-medium text-lg transition-colors inline-flex items-center">
+          <button
+            className="bg-rose-600 hover:bg-rose-700 text-white px-8 py-3 rounded-full font-medium text-lg transition-colors inline-flex items-center"
+            onClick={handleFindCompanion}
+          >
             Find Your Companion
             <ArrowRight className="ml-2" size={20} />
           </button>

@@ -81,7 +81,7 @@ export const getAllReports = async () => {
 };
 
 export const updateReportStatus = async (id, status) => {
-  const res = await axios.patch(`${API_URL}/admin/reports/${id}`, { status }, { withCredentials: true });
+  const res = await axios.put(`${API_URL}/admin/reports/${id}`, { status }, { withCredentials: true });
   return res.data.data;
 };
 
@@ -97,6 +97,6 @@ export const getAllReviewReports = async () => {
 };
 
 export const updateReviewReportStatus = async (id, status) => {
-  const res = await axios.patch(`${API_URL}/admin/review-reports/${id}`, { status }, { withCredentials: true });
+  const res = await axios.put(`${API_URL}/admin/review-reports/${id}`, { status }, { withCredentials: true });
   return res.data.data;
 };

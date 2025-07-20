@@ -12,6 +12,6 @@ router.post("/review-reports", verifyJWT, createReviewReport);
 router.get("/admin/review-reports", verifyJWT, verifyAdmin, getAllReviewReports);
 
 // Admin: update review report status
-router.patch("/admin/review-reports/:id", verifyJWT, verifyAdmin, updateReviewReportStatus);
+router.put("/admin/review-reports/:id", verifyJWT, verifyAdmin, updateReviewReportStatus);
 
 export default router; 

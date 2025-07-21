@@ -1,3 +1,5 @@
+"use client"
+
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import Slider from "react-slick"
@@ -16,14 +18,12 @@ import {
   Info,
   Activity,
   AlertCircle,
-  Award,
   MessageCircle,
   Check,
   Star,
   Edit2,
   Trash2,
   X,
-  MoreVertical,
 } from "lucide-react"
 import { createReport } from "../services/adminService"
 import { createReviewReport } from "../services/adminService"
@@ -36,7 +36,6 @@ const PetDetailsPage = () => {
   const [error, setError] = useState(null)
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isOwner, setIsOwner] = useState(false)
-  const { showToast } = useToast ? useToast() : { showToast: () => {} }
   const [adoptionLoading, setAdoptionLoading] = useState(false)
   const [adoptionSuccess, setAdoptionSuccess] = useState(false)
   const [pendingCount, setPendingCount] = useState(0)
@@ -58,6 +57,7 @@ const PetDetailsPage = () => {
   const [reviewToReport, setReviewToReport] = useState(null)
   const [reviewReportReason, setReviewReportReason] = useState("")
   const [reviewReportLoading, setReviewReportLoading] = useState(false)
+  const { showToast } = useToast()
 
   useEffect(() => {
     const fetchPet = async () => {
@@ -91,7 +91,7 @@ const PetDetailsPage = () => {
         const response = await getAllAdoptionRequests({ petId: pet._id, status: "pending" })
         if (response.success && Array.isArray(response.data?.requests)) {
           // Exclude requests made by the current user
-          const count = response.data.requests.filter(r => r.userId !== user?._id).length
+          const count = response.data.requests.filter((r) => r.userId !== user?._id).length
           setPendingCount(count)
         }
       } catch (e) {
@@ -115,12 +115,12 @@ const PetDetailsPage = () => {
           }
         }
         if (reviewsArr.length > 0) {
-          const extracted = reviewsArr.map(r => ({
+          const extracted = reviewsArr.map((r) => ({
             _id: r._id,
             userId: r.userId?._id,
             name: r.userId?.name || "Anonymous",
             rating: r.rating,
-            comment: r.comment
+            comment: r.comment,
           }))
           setReviews(extracted)
         } else {
@@ -178,9 +178,9 @@ const PetDetailsPage = () => {
     setAdoptionLoading(false)
     if (response.success) {
       setAdoptionSuccess(true)
-      showToast && showToast("Adoption request sent successfully!", "success")
+      showToast("Adoption request sent successfully!")
     } else {
-      showToast && showToast(response.message || "Failed to send adoption request", "error")
+      showToast(response.message || "Failed to send adoption request", "error")
     }
   }
 
@@ -188,7 +188,7 @@ const PetDetailsPage = () => {
     setEditingReview(review)
     setEditForm({
       rating: review.rating,
-      comment: review.comment
+      comment: review.comment,
     })
     setShowEditModal(true)
   }
@@ -206,9 +206,7 @@ const PetDetailsPage = () => {
     try {
       const response = await updateReview(editingReview._id, editForm)
       if (response.success) {
-        setReviews(reviews.map(r => 
-          r._id === editingReview._id ? { ...r, ...editForm } : r
-        ))
+        setReviews(reviews.map((r) => (r._id === editingReview._id ? { ...r, ...editForm } : r)))
         showToast("Review updated successfully")
         setShowEditModal(false)
       }
@@ -226,7 +224,7 @@ const PetDetailsPage = () => {
     try {
       const response = await deleteReview(reviewToDelete._id)
       if (response.success) {
-        setReviews(reviews.filter(r => r._id !== reviewToDelete._id))
+        setReviews(reviews.filter((r) => r._id !== reviewToDelete._id))
         showToast("Review deleted successfully")
         setShowDeleteModal(false)
       }
@@ -252,11 +250,11 @@ const PetDetailsPage = () => {
         pet: pet._id,
         reason: reportReason.trim(),
       })
-      showToast && showToast("Report submitted to admin", "success")
+      showToast("Report submitted to admin", "success")
       setShowReportModal(false)
       setReportReason("")
     } catch (e) {
-      showToast && showToast("Failed to submit report", "error")
+      showToast("Failed to submit report", "error")
     } finally {
       setReportLoading(false)
     }
@@ -276,12 +274,12 @@ const PetDetailsPage = () => {
         review: reviewToReport._id,
         reason: reviewReportReason.trim(),
       })
-      showToast && showToast("Review report submitted to admin", "success")
+      showToast("Review report submitted to admin", "success")
       setShowReviewReportModal(false)
       setReviewToReport(null)
       setReviewReportReason("")
     } catch (e) {
-      showToast && showToast("Failed to submit review report", "error")
+      showToast("Failed to submit review report", "error")
     } finally {
       setReviewReportLoading(false)
     }
@@ -289,13 +287,13 @@ const PetDetailsPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
-        <div className="container mx-auto px-4 py-12">
-          <div className="flex justify-center items-center h-64">
-            <div className="relative w-20 h-20">
-              <div className="absolute top-0 left-0 w-full h-full rounded-full border-4 border-purple-200 border-t-purple-600 animate-spin"></div>
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                <Heart className="text-purple-600 h-8 w-8" />
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-100">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-center items-center h-48">
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin"></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Heart className="text-emerald-600 h-6 w-6 animate-pulse" />
               </div>
             </div>
           </div>
@@ -306,24 +304,22 @@ const PetDetailsPage = () => {
 
   if (error || !pet) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
-        <div className="container mx-auto px-4 py-12">
-          <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-6 rounded-lg shadow-md" role="alert">
-            <div className="flex items-center">
-              <svg className="h-6 w-6 mr-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                />
-              </svg>
-              <p className="font-bold">Error!</p>
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-100">
+        <div className="container mx-auto px-4 py-8">
+          <div
+            className="max-w-md mx-auto bg-white/80 backdrop-blur-sm border border-red-200 text-red-800 p-6 rounded-xl shadow-lg"
+            role="alert"
+          >
+            <div className="flex items-center mb-3">
+              <div className="bg-red-100 p-2 rounded-full mr-3">
+                <AlertCircle className="h-5 w-5 text-red-600" />
+              </div>
+              <h3 className="text-lg font-bold">Oops! Something went wrong</h3>
             </div>
-            <p className="mt-2">{error || "Pet not found."}</p>
+            <p className="mb-4 text-red-700">{error || "Pet not found."}</p>
             <button
               onClick={() => navigate(-1)}
-              className="mt-4 bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1"
+              className="w-full bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-all duration-300 font-medium shadow-md hover:shadow-lg transform hover:-translate-y-1"
             >
               Go Back
             </button>
@@ -336,65 +332,69 @@ const PetDetailsPage = () => {
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case "available":
-        return "bg-green-100 text-green-800"
+        return "bg-emerald-500 text-white"
       case "pending":
-        return "bg-yellow-100 text-yellow-800"
+        return "bg-amber-500 text-white"
       case "adopted":
-        return "bg-purple-100 text-purple-800"
+        return "bg-gray-500 text-white"
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-400 text-white"
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
-      <div className="container mx-auto px-4 py-12">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 px-4 py-2 bg-white text-purple-700 border border-purple-200 rounded-full shadow hover:bg-purple-50 hover:text-purple-900 transition-all mb-8 group"
-        >
-          <ArrowLeft className="h-5 w-5 mr-1 group-hover:-translate-x-1 transition-transform" />
-          <span className="font-medium">Back to pets</span>
-        </button>
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-100">
+      {/* Header with consistent background */}
+      <div className="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-100 py-3">
+        <div className="container mx-auto px-4">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 px-3 py-2 bg-white/80 backdrop-blur-sm text-emerald-700 border border-emerald-200 rounded-lg shadow-md hover:bg-emerald-50 hover:text-emerald-900 transition-all group text-sm"
+          >
+            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+            <span className="font-medium">Back to pets</span>
+          </button>
+        </div>
+      </div>
 
-        <div className="max-w-5xl mx-auto">
-          <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
-            <div className="md:flex">
-              {/* Image Slider Section */}
-              <div className="md:w-1/2 relative">
-                <div className="h-full">
+      <div className="container mx-auto px-4 py-6">
+        {/* Hero Section */}
+        <div className="relative mb-6">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border border-white/20">
+            <div className="lg:flex">
+              {/* Image Section */}
+              <div className="lg:w-3/5 relative">
+                <div className="aspect-[4/3] lg:aspect-[3/2] overflow-hidden">
                   {pet.images?.length === 1 ? (
-                    <div className="h-[400px] flex items-center justify-center">
-                      <img
-                        src={pet.images[0]}
-                        alt={pet.name}
-                        className="object-cover w-full h-full rounded-xl shadow"
-                        style={{ maxHeight: '400px', maxWidth: '100%' }}
-                      />
-                    </div>
+                    <img
+                      src={pet.images[0] || "/placeholder.svg"}
+                      alt={pet.name}
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     <Slider {...sliderSettings} className="h-full">
                       {pet.images?.map((image, idx) => (
-                        <div key={idx} className="h-[400px]">
-                          <div
-                            className="w-full h-full bg-center bg-cover rounded-xl shadow"
-                            style={{ backgroundImage: `url(${image})` }}
-                          ></div>
+                        <div key={idx} className="h-full">
+                          <img
+                            src={image || "/placeholder.svg"}
+                            alt={`${pet.name} - Image ${idx + 1}`}
+                            className="w-full h-full object-cover"
+                          />
                         </div>
                       ))}
                     </Slider>
                   )}
                 </div>
 
-                {/* Image Navigation Dots */}
+                {/* Image Navigation */}
                 {pet.images?.length > 1 && (
-                  <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-1 bg-black/30 backdrop-blur-sm rounded-full px-3 py-1">
                     {pet.images?.map((_, idx) => (
                       <button
                         key={idx}
                         onClick={() => setCurrentSlide(idx)}
                         className={`w-2 h-2 rounded-full transition-all ${
-                          currentSlide === idx ? "bg-white w-6" : "bg-white/50 hover:bg-white/80"
+                          currentSlide === idx ? "bg-white w-6" : "bg-white/60 hover:bg-white/80"
                         }`}
                         aria-label={`Go to slide ${idx + 1}`}
                       />
@@ -405,100 +405,106 @@ const PetDetailsPage = () => {
                 {/* Status Badge */}
                 <div className="absolute top-4 left-4">
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(pet.adoptionStatus)}`}
+                    className={`px-3 py-1 rounded-full text-sm font-bold shadow-lg ${getStatusColor(pet.adoptionStatus)}`}
                   >
-                    {pet.adoptionStatus || "Unknown Status"}
+                    {pet.adoptionStatus || "Unknown"}
                   </span>
                 </div>
               </div>
 
-              {/* Pet Details Section */}
-              <div className="md:w-1/2 p-8 relative">
-                {/* Direct report icon for user */}
+              {/* Pet Info Section */}
+              <div className="lg:w-2/5 p-6 lg:p-8 relative">
+                {/* Report Button - Moved to details section top right */}
                 {!isOwner && (
                   <button
-                    className="absolute top-0 right-0 z-10 p-2 rounded-full hover:bg-yellow-100 focus:outline-none"
+                    className="absolute top-4 right-4 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-3 py-2 rounded-lg shadow-sm hover:shadow-md transition-all text-xs font-medium flex items-center gap-1"
                     onClick={handleReportUser}
                     title="Report User"
                   >
-                    <AlertCircle className="h-6 w-6 text-yellow-600" />
+                    <AlertCircle className="h-3 w-3" />
+                    Report
                   </button>
                 )}
-                <div className="flex items-center gap-3 mb-2">
-                  <Heart className="text-red-500 h-6 w-6 fill-current" />
-                  <h1 className="text-3xl font-bold text-gray-800">Meet {pet.name}</h1>
-                </div>
 
-                <div className="flex flex-wrap gap-3 mb-6">
-                  <div className="flex items-center gap-1 bg-purple-50 px-3 py-1 rounded-full">
-                    <Paw className="h-4 w-4 text-purple-600" />
-                    <span className="text-sm font-medium text-purple-800">{pet.species}</span>
-                  </div>
-                  <div className="flex items-center gap-1 bg-purple-50 px-3 py-1 rounded-full">
-                    <Calendar className="h-4 w-4 text-purple-600" />
-                    <span className="text-sm font-medium text-purple-800">{pet.age} years</span>
-                  </div>
-                  <div className="flex items-center gap-1 bg-purple-50 px-3 py-1 rounded-full">
-                    {pet.gender?.toLowerCase() === "male" ? (
-                      <Male className="h-4 w-4 text-blue-600" />
-                    ) : (
-                      <Female className="h-4 w-4 text-pink-600" />
-                    )}
-                    <span className="text-sm font-medium text-purple-800">{pet.gender}</span>
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  <div>
-                    <h2 className="text-xl font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                      <Info className="h-5 w-5 text-purple-600" />
-                      About
-                    </h2>
-                    <p className="text-gray-600 leading-relaxed">{pet.description || "No description available."}</p>
+                <div className="mb-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="bg-gradient-to-r from-emerald-500 to-teal-500 p-1 rounded-full">
+                      <Heart className="text-white h-4 w-4" />
+                    </div>
+                    <h1 className="text-2xl font-bold text-gray-800">{pet.name}</h1>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-purple-50 p-4 rounded-xl">
-                      <h3 className="font-medium text-purple-800 mb-2 flex items-center gap-2">
-                        <Activity className="h-4 w-4" />
-                        Breed
-                      </h3>
-                      <p className="text-gray-700">{pet.breed || "Unknown"}</p>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <div className="flex items-center gap-1 bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-sm">
+                      <Paw className="h-3 w-3" />
+                      <span className="font-medium">{pet.species}</span>
+                    </div>
+                    <div className="flex items-center gap-1 bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm">
+                      <Calendar className="h-3 w-3" />
+                      <span className="font-medium">{pet.age} years</span>
+                    </div>
+                    <div className="flex items-center gap-1 bg-cyan-100 text-cyan-800 px-3 py-1 rounded-full text-sm">
+                      {pet.gender?.toLowerCase() === "male" ? (
+                        <Male className="h-3 w-3" />
+                      ) : (
+                        <Female className="h-3 w-3" />
+                      )}
+                      <span className="font-medium">{pet.gender}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-8 flex gap-4">
+                {/* About Section */}
+                <div className="mb-6">
+                  <h2 className="text-lg font-bold text-gray-800 mb-2 flex items-center gap-2">
+                    <Info className="h-4 w-4 text-emerald-600" />
+                    About {pet.name}
+                  </h2>
+                  <p className="text-gray-600 leading-relaxed mb-3 text-sm">
+                    {pet.description || "No description available."}
+                  </p>
+
+                  <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-3 rounded-lg border border-emerald-100">
+                    <h3 className="font-semibold text-emerald-800 mb-1 flex items-center gap-1 text-sm">
+                      <Activity className="h-3 w-3" />
+                      Breed Information
+                    </h3>
+                    <p className="text-emerald-700 text-sm">{pet.breed || "Mixed Breed"}</p>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="space-y-2">
                   {pet.owner && pet.owner.phone && !isOwner && (
                     <button
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-full font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1 flex items-center justify-center gap-2"
+                      className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1 flex items-center justify-center gap-2 text-sm"
                       onClick={handleWhatsAppClick}
                     >
-                      <MessageCircle className="h-5 w-5" />
+                      <MessageCircle className="h-4 w-4" />
                       Contact Owner
                     </button>
                   )}
 
                   {!isOwner && pet.adoptionStatus !== "adopted" && (
                     <button
-                      className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-3 px-6 rounded-full font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1 flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:transform-none text-sm"
                       onClick={handleAdoptionRequest}
                       disabled={adoptionLoading || adoptionSuccess}
                     >
                       {adoptionLoading ? (
                         <>
                           <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          <span>Requesting...</span>
+                          <span>Sending Request...</span>
                         </>
                       ) : adoptionSuccess ? (
                         <>
-                          <Check className="h-5 w-5" />
-                          <span>Request Sent</span>
+                          <Check className="h-4 w-4" />
+                          <span>Request Sent!</span>
                         </>
                       ) : (
                         <>
-                          <Heart className="h-5 w-5" />
-                          Request Adoption
+                          <Heart className="h-4 w-4" />
+                          <span>Request Adoption</span>
                         </>
                       )}
                     </button>
@@ -506,23 +512,11 @@ const PetDetailsPage = () => {
 
                   {isOwner && (
                     <button
-                      className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-3 px-6 rounded-full font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1 flex items-center justify-center gap-2"
-                      onClick={() => navigate('/my-pets')}
+                      className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1 flex items-center justify-center gap-2 text-sm"
+                      onClick={() => navigate("/my-pets")}
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                      </svg>
-                      Edit Pet
+                      <Edit2 className="h-4 w-4" />
+                      <span>Edit Pet Details</span>
                     </button>
                   )}
                 </div>
@@ -531,96 +525,120 @@ const PetDetailsPage = () => {
           </div>
         </div>
 
-        <div className="mt-12 max-w-5xl mx-auto">
-          <div className="bg-white rounded-3xl shadow-xl p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                <Star className="h-6 w-6 text-yellow-500 fill-current" />
-                Reviews
-              </h2>
-            </div>
+        {/* Reviews Section */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+              <div className="bg-gradient-to-r from-amber-400 to-orange-500 p-1 rounded-full">
+                <Star className="h-4 w-4 text-white" />
+              </div>
+              Reviews & Feedback
+            </h2>
+          </div>
 
-            {reviews.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No reviews yet</p>
-            ) : (
-              <div className="space-y-6">
-                {reviews.map((review) => {
-                  const currentUserId = JSON.parse(localStorage.getItem("user"))?._id
-                  const isUserReview = review.userId === currentUserId
-                  return (
-                    <div key={review._id} className="border-b border-gray-100 pb-6 last:border-0">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-gray-800">{review.name}</span>
-                          <div className="flex">
+          {reviews.length === 0 ? (
+            <div className="text-center py-8">
+              <div className="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                <MessageCircle className="h-8 w-8 text-gray-400" />
+              </div>
+              <p className="text-gray-500">No reviews yet. Be the first to share your thoughts!</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {reviews.map((review) => {
+                const currentUserId = JSON.parse(localStorage.getItem("user"))?._id
+                const isUserReview = review.userId === currentUserId
+                return (
+                  <div
+                    key={review._id}
+                    className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl border border-gray-200"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="bg-gradient-to-r from-emerald-400 to-teal-500 w-8 h-8 rounded-full flex items-center justify-center">
+                          <span className="text-white font-bold text-xs">{review.name.charAt(0).toUpperCase()}</span>
+                        </div>
+                        <div>
+                          <span className="font-semibold text-gray-800 text-sm">{review.name}</span>
+                          <div className="flex mt-1">
                             {[1, 2, 3, 4, 5].map((star) => (
                               <Star
                                 key={star}
-                                className={`h-4 w-4 ${star <= review.rating ? "text-yellow-500 fill-current" : "text-gray-300"}`}
+                                className={`h-3 w-3 ${star <= review.rating ? "text-amber-400 fill-current" : "text-gray-300"}`}
                               />
                             ))}
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          {isUserReview && (
-                            <>
-                              <button
-                                onClick={() => handleEditReview(review)}
-                                className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700"
-                                title="Edit Review"
-                              >
-                                <Edit2 className="h-4 w-4" />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteReview(review)}
-                                className="bg-red-600 text-white p-2 rounded-full hover:bg-red-700"
-                                title="Delete Review"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </>
-                          )}
-                          {!isUserReview && (
-                            <button
-                              onClick={() => handleReportReview(review)}
-                              className="bg-yellow-100 text-yellow-700 p-2 rounded-full hover:bg-yellow-200"
-                              title="Report Review"
-                            >
-                              <AlertCircle className="h-4 w-4" />
-                            </button>
-                          )}
-                        </div>
                       </div>
-                      <p className="text-gray-600">{review.comment}</p>
+                      <div className="flex items-center gap-1">
+                        {isUserReview && (
+                          <>
+                            <button
+                              onClick={() => handleEditReview(review)}
+                              className="bg-blue-500 text-white p-1 rounded-full hover:bg-blue-600 transition-colors shadow-sm"
+                              title="Edit Review"
+                            >
+                              <Edit2 className="h-3 w-3" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteReview(review)}
+                              className="bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors shadow-sm"
+                              title="Delete Review"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          </>
+                        )}
+                        {!isUserReview && (
+                          <button
+                            onClick={() => handleReportReview(review)}
+                            className="bg-amber-100 text-amber-700 p-1 rounded-full hover:bg-amber-200 transition-colors"
+                            title="Report Review"
+                          >
+                            <AlertCircle className="h-3 w-3" />
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
+                    <p className="text-gray-700 leading-relaxed text-sm">{review.comment}</p>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
       </div>
 
+      {/* All Modals with reduced sizing */}
       {/* Confirmation Modal */}
       {showConfirmModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-300">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl max-w-md w-full p-6 border border-white/20">
             <div className="mb-4">
               <h3 className="text-xl font-bold text-gray-800 mb-2">Confirm Adoption Request</h3>
-              <p className="text-gray-700">There are already <span className="font-semibold">{pendingReqCount}</span> requests for this pet. It's up to the owner to choose you.<br/>Do you want to proceed?</p>
+              <p className="text-gray-700 leading-relaxed text-sm">
+                There are already <span className="font-bold text-emerald-600">{pendingReqCount}</span> requests for
+                this pet. The owner will review all applications and choose the best match.
+                <br />
+                <br />
+                Would you like to proceed with your application?
+              </p>
             </div>
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-3">
               <button
                 onClick={() => setShowConfirmModal(false)}
-                className="flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded-full hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                className="flex-1 border-2 border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm"
               >
                 Cancel
               </button>
               <button
-                onClick={() => { setShowConfirmModal(false); doCreateAdoptionRequest(); }}
-                className="flex-1 bg-purple-600 text-white py-2 px-4 rounded-full hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors flex items-center justify-center gap-2"
+                onClick={() => {
+                  setShowConfirmModal(false)
+                  doCreateAdoptionRequest()
+                }}
+                className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-2 px-4 rounded-lg hover:from-emerald-600 hover:to-teal-700 transition-all font-medium shadow-lg text-sm"
               >
-                Proceed
+                Yes, Proceed
               </button>
             </div>
           </div>
@@ -629,31 +647,29 @@ const PetDetailsPage = () => {
 
       {/* Edit Review Modal */}
       {showEditModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-300">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl max-w-md w-full p-6 border border-white/20">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold text-gray-800">Edit Review</h3>
-              <button onClick={() => setShowEditModal(false)} className="text-gray-500 hover:text-gray-700">
+              <h3 className="text-xl font-bold text-gray-800">Edit Your Review</h3>
+              <button onClick={() => setShowEditModal(false)} className="text-gray-500 hover:text-gray-700 p-1">
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             <form onSubmit={submitEditReview}>
-              <div className="mb-6">
-                <label className="block text-gray-700 font-medium mb-2">Rating</label>
-                <div className="flex gap-2">
+              <div className="mb-4">
+                <label className="block text-gray-700 font-semibold mb-2 text-sm">Rating</label>
+                <div className="flex gap-1">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
                       key={star}
                       type="button"
                       onClick={() => setEditForm({ ...editForm, rating: star })}
-                      className="focus:outline-none"
+                      className="focus:outline-none transition-transform hover:scale-110"
                     >
                       <Star
                         className={`h-8 w-8 ${
-                          star <= editForm.rating
-                            ? "text-yellow-500 fill-current"
-                            : "text-gray-300 hover:text-yellow-300"
+                          star <= editForm.rating ? "text-amber-400 fill-current" : "text-gray-300 hover:text-amber-300"
                         }`}
                       />
                     </button>
@@ -662,11 +678,12 @@ const PetDetailsPage = () => {
               </div>
 
               <div className="mb-6">
-                <label className="block text-gray-700 font-medium mb-2">Comment</label>
+                <label className="block text-gray-700 font-semibold mb-2 text-sm">Your Review</label>
                 <textarea
                   value={editForm.comment}
                   onChange={(e) => setEditForm({ ...editForm, comment: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent min-h-[100px]"
+                  className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-emerald-500 transition-colors min-h-[100px] resize-none text-sm"
+                  placeholder="Share your thoughts about this pet..."
                   required
                 />
               </div>
@@ -675,23 +692,23 @@ const PetDetailsPage = () => {
                 <button
                   type="button"
                   onClick={() => setShowEditModal(false)}
-                  className="flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded-full hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                  className="flex-1 border-2 border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting || editForm.rating === 0}
-                  className="flex-1 bg-purple-600 text-white py-2 px-4 rounded-full hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-2 px-4 rounded-lg hover:from-emerald-600 hover:to-teal-700 disabled:opacity-50 transition-all font-medium shadow-lg flex items-center justify-center gap-2 text-sm"
                 >
                   {isSubmitting ? (
                     <>
-                      <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <div className="h-3 w-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       <span>Saving...</span>
                     </>
                   ) : (
                     <>
-                      <Check className="h-4 w-4" />
+                      <Check className="h-3 w-3" />
                       <span>Save Changes</span>
                     </>
                   )}
@@ -704,37 +721,38 @@ const PetDetailsPage = () => {
 
       {/* Delete Review Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-300">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl max-w-md w-full p-6 border border-white/20">
             <div className="flex items-center gap-3 mb-4">
               <div className="bg-red-100 p-2 rounded-full">
                 <AlertCircle className="h-6 w-6 text-red-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-800">Delete Review</h3>
             </div>
-            <p className="text-gray-700 mb-6">
-              Are you sure you want to delete your review? This action cannot be undone.
+            <p className="text-gray-700 mb-6 leading-relaxed text-sm">
+              Are you sure you want to delete your review? This action cannot be undone and your feedback will be
+              permanently removed.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowDeleteModal(false)}
-                className="flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded-full hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                className="flex-1 border-2 border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmDeleteReview}
                 disabled={isSubmitting}
-                className="flex-1 bg-red-600 text-white py-2 px-4 rounded-full hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                className="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white py-2 px-4 rounded-lg hover:from-red-600 hover:to-red-700 disabled:opacity-50 transition-all font-medium shadow-lg flex items-center justify-center gap-2 text-sm"
               >
                 {isSubmitting ? (
                   <>
-                    <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <div className="h-3 w-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     <span>Deleting...</span>
                   </>
                 ) : (
                   <>
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-3 w-3" />
                     <span>Delete Review</span>
                   </>
                 )}
@@ -744,27 +762,33 @@ const PetDetailsPage = () => {
         </div>
       )}
 
+      {/* Report User Modal */}
       {showReportModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-300">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl max-w-md w-full p-6 border border-white/20">
             <div className="flex items-center gap-3 mb-4">
-              <div className="bg-yellow-100 p-2 rounded-full">
-                <AlertCircle className="h-6 w-6 text-yellow-600" />
+              <div className="bg-amber-100 p-2 rounded-full">
+                <AlertCircle className="h-6 w-6 text-amber-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-800">Report User</h3>
             </div>
-            <p className="text-gray-700 mb-4">Please provide a reason for reporting this user (owner of the pet):</p>
+            <p className="text-gray-700 mb-3 leading-relaxed text-sm">
+              Please provide a detailed reason for reporting this user:
+            </p>
             <textarea
               value={reportReason}
-              onChange={e => setReportReason(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent min-h-[80px]"
-              placeholder="Enter reason..."
+              onChange={(e) => setReportReason(e.target.value)}
+              className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500 transition-colors min-h-[80px] resize-none mb-4 text-sm"
+              placeholder="Describe the issue..."
               required
             />
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-3">
               <button
-                onClick={() => { setShowReportModal(false); setReportReason("") }}
-                className="flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded-full hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                onClick={() => {
+                  setShowReportModal(false)
+                  setReportReason("")
+                }}
+                className="flex-1 border-2 border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm"
                 disabled={reportLoading}
               >
                 Cancel
@@ -772,16 +796,16 @@ const PetDetailsPage = () => {
               <button
                 onClick={submitReport}
                 disabled={reportLoading || !reportReason.trim()}
-                className="flex-1 bg-yellow-600 text-white py-2 px-4 rounded-full hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                className="flex-1 bg-gradient-to-r from-amber-500 to-orange-600 text-white py-2 px-4 rounded-lg hover:from-amber-600 hover:to-orange-700 disabled:opacity-50 transition-all font-medium shadow-lg flex items-center justify-center gap-2 text-sm"
               >
                 {reportLoading ? (
                   <>
-                    <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <div className="h-3 w-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     <span>Reporting...</span>
                   </>
                 ) : (
                   <>
-                    <AlertCircle className="h-4 w-4" />
+                    <AlertCircle className="h-3 w-3" />
                     <span>Submit Report</span>
                   </>
                 )}
@@ -791,27 +815,34 @@ const PetDetailsPage = () => {
         </div>
       )}
 
+      {/* Report Review Modal */}
       {showReviewReportModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-300">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl max-w-md w-full p-6 border border-white/20">
             <div className="flex items-center gap-3 mb-4">
-              <div className="bg-yellow-100 p-2 rounded-full">
-                <AlertCircle className="h-6 w-6 text-yellow-600" />
+              <div className="bg-amber-100 p-2 rounded-full">
+                <AlertCircle className="h-6 w-6 text-amber-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-800">Report Review</h3>
             </div>
-            <p className="text-gray-700 mb-4">Please provide a reason for reporting this review:</p>
+            <p className="text-gray-700 mb-3 leading-relaxed text-sm">
+              Please provide a reason for reporting this review:
+            </p>
             <textarea
               value={reviewReportReason}
-              onChange={e => setReviewReportReason(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent min-h-[80px]"
-              placeholder="Enter reason..."
+              onChange={(e) => setReviewReportReason(e.target.value)}
+              className="w-full border-2 border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500 transition-colors min-h-[80px] resize-none mb-4 text-sm"
+              placeholder="Describe why this review should be reported..."
               required
             />
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-3">
               <button
-                onClick={() => { setShowReviewReportModal(false); setReviewToReport(null); setReviewReportReason("") }}
-                className="flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded-full hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                onClick={() => {
+                  setShowReviewReportModal(false)
+                  setReviewToReport(null)
+                  setReviewReportReason("")
+                }}
+                className="flex-1 border-2 border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm"
                 disabled={reviewReportLoading}
               >
                 Cancel
@@ -819,16 +850,16 @@ const PetDetailsPage = () => {
               <button
                 onClick={submitReviewReport}
                 disabled={reviewReportLoading || !reviewReportReason.trim()}
-                className="flex-1 bg-yellow-600 text-white py-2 px-4 rounded-full hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                className="flex-1 bg-gradient-to-r from-amber-500 to-orange-600 text-white py-2 px-4 rounded-lg hover:from-amber-600 hover:to-orange-700 disabled:opacity-50 transition-all font-medium shadow-lg flex items-center justify-center gap-2 text-sm"
               >
                 {reviewReportLoading ? (
                   <>
-                    <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <div className="h-3 w-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     <span>Reporting...</span>
                   </>
                 ) : (
                   <>
-                    <AlertCircle className="h-4 w-4" />
+                    <AlertCircle className="h-3 w-3" />
                     <span>Submit Report</span>
                   </>
                 )}

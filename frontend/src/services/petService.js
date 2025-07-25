@@ -15,7 +15,7 @@ const handleApiError = (error) => {
 
 export const getAllPets = async () => {
   try {
-    const response = await axios.get(`${API_URL}/getAllPets`, {
+    const response = await axios.get(`${API_URL}/pets/getAllPets`, {
       withCredentials: true
     });
     if (response.data.success && response.data.message) {
@@ -31,7 +31,7 @@ export const getAllPets = async () => {
 
 export const getPetsByOwner = async (ownerId) => {
   try {
-    const response = await axios.get(`${API_URL}/getPetsByOwner/${ownerId}`, {
+    const response = await axios.get(`${API_URL}/pets/getPetsByOwner/${ownerId}`, {
       withCredentials: true
     });
     if (response.data.success && response.data.message) {
@@ -47,7 +47,7 @@ export const getPetsByOwner = async (ownerId) => {
 
 export const updatePet = async (petId, petData) => {
   try {
-    const response = await axios.put(`${API_URL}/updatePet/${petId}`, petData, {
+    const response = await axios.put(`${API_URL}/pets/updatePet/${petId}`, petData, {
       withCredentials: true
     });
     if (response.data.success) {
@@ -63,7 +63,7 @@ export const updatePet = async (petId, petData) => {
 
 export const deletePet = async (petId) => {
   try {
-    const response = await axios.delete(`${API_URL}/deletePet/${petId}`, {
+    const response = await axios.delete(`${API_URL}/pets/deletePet/${petId}`, {
       withCredentials: true
     });
     if (response.data.success) {
@@ -84,7 +84,7 @@ export const updatePetImages = async (petId, files, replace = false) => {
     });
     formData.append('replace', replace);
 
-    const response = await axios.put(`${API_URL}/updatePetImages/${petId}`, formData, {
+    const response = await axios.put(`${API_URL}/pets/updatePetImages/${petId}`, formData, {
       withCredentials: true,
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -103,7 +103,7 @@ export const updatePetImages = async (petId, files, replace = false) => {
 
 export const createPet = async (formData) => {
   try {
-    const response = await axios.post(`${API_URL}/create-pet`, formData, {
+    const response = await axios.post(`${API_URL}/pets/create-pet`, formData, {
       withCredentials: true
     });
     return response.data;
@@ -115,7 +115,7 @@ export const createPet = async (formData) => {
 
 export const getPetReviews = async (petId) => {
   try {
-    const response = await axios.get(`${API_URL.replace('/pets', '')}/reviews/get-Reviews-for-pet/${petId}`, {
+    const response = await axios.get(`${API_URL}/reviews/get-Reviews-for-pet/${petId}`, {
       withCredentials: true
     });
     return {
@@ -132,7 +132,7 @@ export const getPetReviews = async (petId) => {
 export const updateReview = async (reviewId, reviewData) => {
   try {
     const response = await axios.put(
-      `${API_URL.replace('/pets', '')}/reviews/update-review/${reviewId}`,
+      `${API_URL}/reviews/update-review/${reviewId}`,
       reviewData,
       { withCredentials: true }
     );
@@ -149,7 +149,7 @@ export const updateReview = async (reviewId, reviewData) => {
 export const deleteReview = async (reviewId) => {
   try {
     const response = await axios.delete(
-      `${API_URL.replace('/pets', '')}/reviews/delete-review/${reviewId}`,
+      `${API_URL}/reviews/delete-review/${reviewId}`,
       { withCredentials: true }
     );
     return {
@@ -164,7 +164,7 @@ export const deleteReview = async (reviewId) => {
 
 export const getAllReviews = async () => {
   try {
-    const response = await axios.get('http://localhost:5000/api/v1/reviews/get-Reviews', {
+    const response = await axios.get(`${API_URL}/reviews/get-Reviews`, {
       withCredentials: true
     });
     if (response.data && Array.isArray(response.data.data)) {

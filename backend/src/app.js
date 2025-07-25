@@ -3,7 +3,7 @@ import cors from "cors"
 import cookieparser from "cookie-parser"
 const app= express()
 
-const allowedOrigin = "http://localhost:5173"; 
+const allowedOrigin = "https://mern-petadoption-platform.onrender.com"; 
 
 app.use(cors({
   origin: allowedOrigin,

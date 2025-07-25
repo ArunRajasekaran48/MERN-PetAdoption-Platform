@@ -92,8 +92,8 @@ const LoginForm = () => {
                 {/* Simple pet icon SVG */}
                 <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><path d="M12 21c4.5 0 8-2.5 8-6 0-2.5-2-4-4-4-.7 0-1.4.2-2 .6-.6-.4-1.3-.6-2-.6-2 0-4 1.5-4 4 0 3.5 3.5 6 8 6zM7 7a2 2 0 11-4 0 2 2 0 014 0zm14 0a2 2 0 11-4 0 2 2 0 014 0zM7.5 3A1.5 1.5 0 119 4.5 1.5 1.5 0 017.5 3zm9 0A1.5 1.5 0 1118 4.5 1.5 1.5 0 0116.5 3z" fill="#EF4444"/></svg>
               </span>
-              <span className="text-2xl font-bold text-red-600">PawPal</span>
-            </div>
+              <span className="text-3xl font-extrabold bg-gradient-to-r from-[#8B4513] via-[#800000] to-red-500 bg-clip-text text-transparent">PawPal</span>
+            </div>      
             <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Login To Continue</h2>
           </div>
 

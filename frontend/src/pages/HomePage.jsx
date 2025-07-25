@@ -207,7 +207,7 @@ const HomePage = () => {
           <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
             {/* Brand Logo */}
             <div className="text-center lg:text-left">
-              <h1 className="text-5xl font-black bg-gradient-to-r from-purple-600 via-pink-500 to-orange-500 bg-clip-text text-transparent">
+              <h1 className="text-5xl font-black bg-gradient-to-r from-purple-600 via-magenta-500 to-pink-500 bg-clip-text text-transparent">
                 Pawpal
               </h1>
               <p className="text-gray-600 text-sm mt-1 font-medium">Find Your Perfect Companion</p>

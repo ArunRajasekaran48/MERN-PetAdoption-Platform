@@ -58,9 +58,9 @@ const Header = () => {
     <header className="sticky top-0 z-50 bg-gradient-to-r from-blue-50 to-orange-50 shadow-sm">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center">
-          <Link to="/" className="flex items-center">
-            <img src="/src/assets/pawpal_logo-r.png" alt="PawPal Logo" className="h-20 w-32" />
-          </Link>
+          <h1 className="text-5xl font-black bg-gradient-to-r from-[#8B4513] via-[#800000] to-red-500 bg-clip-text text-transparent">
+                Pawpal
+          </h1>
         </div>
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-8">

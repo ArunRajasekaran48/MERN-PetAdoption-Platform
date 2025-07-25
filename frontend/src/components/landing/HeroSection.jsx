@@ -1,7 +1,7 @@
 import React from "react"
 import { Heart, ArrowRight } from "lucide-react"
 import { useNavigate } from "react-router-dom";
-
+import dogBlack from '../../assets/dog-black.jpg'
 
 const HeroSection = () => {
   const navigate = useNavigate();
@@ -35,7 +35,7 @@ const HeroSection = () => {
         <div className="md:w-1/2">
           <div className="relative">
             <img
-              src="/src/assets/dog-black.jpg?height=500&width=600"
+              src={dogBlack}
               alt="Happy pets with their owners"
               className="rounded-lg shadow-xl object-cover"
             />

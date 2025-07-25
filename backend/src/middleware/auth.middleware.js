@@ -1,16 +1,11 @@
 import jwt from "jsonwebtoken"
 import { User } from "../models/user.models.js"
 import { ApiError } from "../utils/ApiError.js"
-
+import cors from "cors";
 const verifyJWT = async (req, res, next) => {
     try {
-        // Try to get token from Authorization header first, then cookies
-        let token = null;
-        if (req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
-            token = req.headers.authorization.split(" ")[1];
-        } else if (req.cookies && req.cookies.accessToken) {
-            token = req.cookies.accessToken;
-        }
+        // Only read token from cookies
+        const token = req.cookies.accessToken;
         if (!token) {
             throw new ApiError(401, "No authentication token found. Please login again.");
         }
@@ -36,5 +31,4 @@ const verifyJWT = async (req, res, next) => {
         });
     }
 }
-
 export { verifyJWT }

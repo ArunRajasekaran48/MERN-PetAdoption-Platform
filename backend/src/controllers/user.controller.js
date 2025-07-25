@@ -85,7 +85,9 @@ const loginUser= async (req,res)=>{
         // console.log(accessToken);
         return res
         .status(200)
-        .cookie("accessToken",accessToken)
+        .cookie("accessToken",accessToken,{
+            httpOnly:true,secure:true,
+            sameSite:"none",maxAge:7 * 24 * 60 * 60 * 1000})
         .json(new ApiResponse(200,loggedInUser,"User Logged in Successfully!!"))
 
     } catch (error) {

@@ -212,7 +212,7 @@ const requestPasswordReset= async(req,res)=>{
         await user.save();
         
         // Create the reset link with the token
-        const resetLink = `http://localhost:5173/reset-password?token=${resetToken}`;
+        const resetLink = `https://mern-pet-adoption-platform.vercel.app/reset-password?token=${resetToken}`;
         console.log("Reset link:", resetLink); // Debug log
         
         // Create a more detailed email template

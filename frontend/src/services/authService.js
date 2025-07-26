@@ -61,9 +61,7 @@ export const getCurrentUser = () => {
 
 export const requestPasswordReset = async (email) => {
   try {
-    const response = await axios.post(`${API_URL}/users/request-reset-password`, { email }, {
-      withCredentials: true
-    });
+    const response = await axios.post(`${API_URL}/users/request-reset-password`, { email });
     return {
       success: true,
       data: response.data,

@@ -721,12 +721,12 @@ const AdminDashboard = () => {
                       <div className="flex items-center justify-between mt-4">
                         <span
                           className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full border ${
-                            pet.status === "available"
+                            pet.adoptionStatus === "available"
                               ? "bg-emerald-100 text-emerald-800 border-emerald-200"
                               : "bg-amber-100 text-amber-800 border-amber-200"
                           }`}
                         >
-                          {pet.status}
+                          {pet.adoptionStatus}
                         </span>
                         <button
                           onClick={() => handlePetAction(pet._id, "remove")}

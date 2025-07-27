@@ -282,7 +282,7 @@ const verifyResetToken = async (req, res) => {
 
         if (!token) {
             console.log("No token provided"); // Debug log
-            return res.redirect(`http://localhost:5173/reset-password?error=invalid_token`);
+            return res.redirect(`https://mern-pet-adoption-platform.vercel.app/reset-password?error=invalid_token`);
         }
 
         const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
@@ -297,15 +297,15 @@ const verifyResetToken = async (req, res) => {
 
         if (!user) {
             console.log("Invalid or expired token"); // Debug log
-            return res.redirect(`http://localhost:5173/reset-password?error=invalid_token`);
+            return res.redirect(`https://mern-pet-adoption-platform.vercel.app/reset-password?error=invalid_token`);
         }
 
         // Redirect to frontend reset password page with the token
         console.log("Redirecting with token:", token); // Debug log
-        return res.redirect(`http://localhost:5173/reset-password?token=${token}`);
+        return res.redirect(`https://mern-pet-adoption-platform.vercel.app/reset-password?token=${token}`);
     } catch (error) {
         console.error("Error verifying reset token:", error);
-        return res.redirect(`http://localhost:5173/reset-password?error=server_error`);
+        return res.redirect(`https://mern-pet-adoption-platform.vercel.app/reset-password?error=server_error`);
     }
 };
 

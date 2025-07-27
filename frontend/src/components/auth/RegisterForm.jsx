@@ -195,7 +195,7 @@ const RegisterForm = () => {
                 />
                 {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
               </div>
-              <div>
+              {/* <div>
                 <label htmlFor="role" className="block text-sm font-medium text-gray-700">
                   User Type
                 </label>
@@ -209,7 +209,7 @@ const RegisterForm = () => {
                   <option value="User">User</option>
                   <option value="Admin">Admin</option>
                 </select>
-              </div>
+              </div> */}
             </div>
             <div>
               <button

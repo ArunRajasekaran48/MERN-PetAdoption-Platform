@@ -1,5 +1,3 @@
-"use client"
-
 import { useEffect, useState } from "react"
 import { getPetsByOwner, deletePet, updatePet, updatePetImages } from "../services/petService"
 import PetCard from "../components/pets/PetCard"

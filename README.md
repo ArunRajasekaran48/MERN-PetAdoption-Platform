@@ -154,7 +154,7 @@ PetAdoption-Platform/
 - `GET /api/v1/adoptionrequests/outgoing` - Get outgoing requests
 - `PUT /api/v1/adoptionrequests/:id` - Update request status
 
-### Messages
+### Messages(Implemented only on backend)
 - `POST /api/v1/messages` - Send message
 - `GET /api/v1/messages/:userId` - Get conversation
 - `PUT /api/v1/messages/:id/read` - Mark message as read
@@ -175,7 +175,7 @@ PetAdoption-Platform/
 
 - **JWT Authentication**: Secure token-based authentication
 - **Password Hashing**: bcrypt encryption for user passwords
-- **Message Encryption**: AES-256-CBC encryption for private messages
+- **Message Encryption(only on backend)**: AES-256-CBC encryption for private messages
 - **Input Validation**: Comprehensive validation for all user inputs
 - **CORS Protection**: Configured CORS for secure cross-origin requests
 - **File Upload Security**: Secure image upload with Cloudinary
@@ -244,11 +244,6 @@ PetAdoption-Platform/
 4. Test thoroughly
 5. Submit a pull request
 
-## 📝 License
-
-This project is licensed under the ISC License.
-
-## 🙏 Acknowledgments
 
 - Icons provided by Lucide React
 - Charts powered by Chart.js
@@ -257,4 +252,4 @@ This project is licensed under the ISC License.
 
 ---
 
-**PawPal** - Making pet adoption simple, safe, and successful! 🐕🐱🐦 
+**PawPal** - Making pet adoption simple, safe, and successful! 🐕🐱🐦

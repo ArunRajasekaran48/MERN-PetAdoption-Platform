@@ -85,7 +85,7 @@ const Header = () => {
           </button>
           {isLoggedIn && user?.role === 'Admin' && (
             <button
-             className="flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-full font-medium transition-colors"
+             className="font-medium text-rose-600 hover:text-rose-700 transition-colors"
               onClick={() => navigate('/admin')}
             >
               Admin Dashboard
@@ -140,7 +140,7 @@ const Header = () => {
               </Link>
               <Link
                 to="/register"
-                className="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-full font-medium transition-colors"
+                className="font-medium text-rose-600 hover:text-rose-700 transition-colors"
               >
                 Register
               </Link>
@@ -218,7 +218,7 @@ const Header = () => {
                 </Link>
                 <Link
                   to="/register"
-                  className="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-full font-medium transition-colors w-full text-center"
+                   className="font-medium text-rose-600 hover:text-rose-700 transition-colors"
                 >
                   Register
                 </Link>

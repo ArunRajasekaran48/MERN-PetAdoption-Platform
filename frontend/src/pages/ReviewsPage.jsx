@@ -1,5 +1,3 @@
-"use client"
-
 import { useEffect, useState } from "react"
 import { getAllReviews } from "../services/petService"
 import { Star, Heart, MessageCircle, ArrowLeft } from "lucide-react"

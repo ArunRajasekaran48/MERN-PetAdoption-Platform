@@ -1,10 +1,7 @@
-import React from "react"
 import Header from "./Header"
 import HeroSection from "./HeroSection"
 import HowItWorks from "./HowItWorks"
-import KeyFeatures from "./KeyFeatures"
 import Testimonials from "./Testimonials"
-import CallToAction from "./CallToAction"
 import Footer from "./Footer"
 
 const LandingPage = () => {
@@ -13,9 +10,7 @@ const LandingPage = () => {
       <Header />
       <HeroSection />
       <HowItWorks />
-      <KeyFeatures />
       <Testimonials />
-      <CallToAction />
       <Footer />
     </div>
   )

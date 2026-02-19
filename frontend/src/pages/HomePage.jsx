@@ -242,7 +242,7 @@ const HomePage = () => {
                 </button>
 
                 {showDropdown && (
-                  <div className="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-2xl py-2 z-50 border border-purple-100 overflow-hidden">
+                  <div className="absolute left-1/2 -translate-x-1/2 md:left-auto md:right-0 mt-3 w-56 sm:w-64 bg-white rounded-xl shadow-2xl py-2 z-50 border border-purple-100 overflow-hidden">
                     <div className="px-4 py-3 border-b border-purple-100 bg-gradient-to-r from-purple-50 to-pink-50">
                       <p className="text-sm font-medium text-gray-900">{user?.name}</p>
                       <p className="text-xs text-gray-500">{user?.email}</p>

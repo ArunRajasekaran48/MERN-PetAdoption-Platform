@@ -229,7 +229,7 @@ PetAdoption-Platform/
 ### Backend Deployment
 - Configure environment variables
 - Set up MongoDB Atlas cluster
-- Deploy to platforms like onrender, Railway, or Vercel
+- Deploy to platforms like render, Railway, or Vercel
 
 ### Frontend Deployment
 - Build the project: `npm run build`
